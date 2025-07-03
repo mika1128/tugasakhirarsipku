@@ -5,10 +5,6 @@
  */
 
 require_once __DIR__ . '/../config/database.php';
-require_once __DIR__ . '/../includes/auth.php';
-
-$auth = new Auth();
-$auth->requireLogin();
 
 header('Content-Type: application/json');
 
@@ -18,144 +14,198 @@ $conn = $db->getConnection();
 $response = ['status' => 'error', 'message' => 'Terjadi kesalahan tidak dikenal.'];
 
 try {
-    // Get recent documents from all categories
-    $recentDocuments = [];
+    // Initialize array for all documents
+    $allDocuments = [];
     
-    // 1. Get recent keluarga documents
-    $stmt = $conn->prepare("
-        SELECT 
-            id,
-            nama_dokumen as title,
-            dokumen as file_name,
-            deskripsi_dokumen as description,
-            tanggal_dibuat as created_date,
-            status,
-            'keluarga' as category,
-            'fas fa-users' as icon,
-            '#4CAF50' as color
-        FROM keluarga_dokumen 
-        ORDER BY id DESC 
-        LIMIT 5
-    ");
-    $stmt->execute();
-    $keluargaDocs = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    // 1. Get recent keluarga documents (with error handling)
+    try {
+        $stmt = $conn->prepare("
+            SELECT 
+                id,
+                nama_dokumen as title,
+                dokumen as file_name,
+                deskripsi_dokumen as description,
+                tanggal_dibuat as created_date,
+                status,
+                'keluarga' as category,
+                'fas fa-users' as icon,
+                '#4CAF50' as color
+            FROM keluarga_dokumen 
+            ORDER BY id DESC 
+            LIMIT 5
+        ");
+        $stmt->execute();
+        $keluargaDocs = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $allDocuments = array_merge($allDocuments, $keluargaDocs);
+    } catch (PDOException $e) {
+        // Table might not exist, continue with other categories
+        error_log("Keluarga table error: " . $e->getMessage());
+    }
     
-    // 2. Get recent arsip vital documents
-    $stmt = $conn->prepare("
-        SELECT 
-            id,
-            CONCAT('Surat No. ', nomor_surat) as title,
-            gambar_surat as file_name,
-            berita_acara_surat as description,
-            CONCAT(tahun_dibuat, '-01-01') as created_date,
-            status,
-            'arsip_vital' as category,
-            'fas fa-file-invoice' as icon,
-            '#FF9800' as color
-        FROM arsip_vital 
-        ORDER BY id DESC 
-        LIMIT 5
-    ");
-    $stmt->execute();
-    $arsipVitalDocs = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    // 2. Get recent arsip vital documents (with error handling)
+    try {
+        $stmt = $conn->prepare("
+            SELECT 
+                id,
+                CONCAT('Surat No. ', nomor_surat) as title,
+                gambar_surat as file_name,
+                berita_acara_surat as description,
+                CONCAT(tahun_dibuat, '-01-01') as created_date,
+                status,
+                'arsip_vital' as category,
+                'fas fa-file-invoice' as icon,
+                '#FF9800' as color
+            FROM arsip_vital 
+            ORDER BY id DESC 
+            LIMIT 5
+        ");
+        $stmt->execute();
+        $arsipVitalDocs = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $allDocuments = array_merge($allDocuments, $arsipVitalDocs);
+    } catch (PDOException $e) {
+        // Table might not exist, continue with other categories
+        error_log("Arsip vital table error: " . $e->getMessage());
+    }
     
-    // 3. Get recent arsip inactive documents
-    $stmt = $conn->prepare("
-        SELECT 
-            id,
-            CONCAT('Surat No. ', nomor_surat) as title,
-            gambar_surat as file_name,
-            berita_acara_surat as description,
-            CONCAT(tahun_dibuat, '-01-01') as created_date,
-            status,
-            'arsip_inactive' as category,
-            'fas fa-folder-minus' as icon,
-            '#9E9E9E' as color
-        FROM arsip_inactive 
-        ORDER BY id DESC 
-        LIMIT 5
-    ");
-    $stmt->execute();
-    $arsipInactiveDocs = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    // 3. Get recent arsip inactive documents (with error handling)
+    try {
+        $stmt = $conn->prepare("
+            SELECT 
+                id,
+                CONCAT('Surat No. ', nomor_surat) as title,
+                gambar_surat as file_name,
+                berita_acara_surat as description,
+                CONCAT(tahun_dibuat, '-01-01') as created_date,
+                status,
+                'arsip_inactive' as category,
+                'fas fa-folder-minus' as icon,
+                '#9E9E9E' as color
+            FROM arsip_inactive 
+            ORDER BY id DESC 
+            LIMIT 5
+        ");
+        $stmt->execute();
+        $arsipInactiveDocs = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $allDocuments = array_merge($allDocuments, $arsipInactiveDocs);
+    } catch (PDOException $e) {
+        // Table might not exist, continue with other categories
+        error_log("Arsip inactive table error: " . $e->getMessage());
+    }
     
-    // 4. Get recent agenda
-    $stmt = $conn->prepare("
-        SELECT 
-            a.id,
-            a.title,
-            NULL as file_name,
-            a.description,
-            a.start_date as created_date,
-            a.status,
-            'agenda' as category,
-            'fas fa-calendar-alt' as icon,
-            '#2196F3' as color
-        FROM agenda a
-        ORDER BY a.id DESC 
-        LIMIT 5
-    ");
-    $stmt->execute();
-    $agendaDocs = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    // 4. Get recent agenda (with error handling)
+    try {
+        $stmt = $conn->prepare("
+            SELECT 
+                a.id,
+                a.title,
+                NULL as file_name,
+                a.description,
+                a.start_date as created_date,
+                a.status,
+                'agenda' as category,
+                'fas fa-calendar-alt' as icon,
+                '#2196F3' as color
+            FROM agenda a
+            ORDER BY a.id DESC 
+            LIMIT 5
+        ");
+        $stmt->execute();
+        $agendaDocs = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $allDocuments = array_merge($allDocuments, $agendaDocs);
+    } catch (PDOException $e) {
+        // Table might not exist, continue
+        error_log("Agenda table error: " . $e->getMessage());
+    }
     
-    // Combine all documents
-    $allDocuments = array_merge($keluargaDocs, $arsipVitalDocs, $arsipInactiveDocs, $agendaDocs);
-    
-    // Sort by created_date (most recent first)
-    usort($allDocuments, function($a, $b) {
-        return strtotime($b['created_date']) - strtotime($a['created_date']);
-    });
-    
-    // Take only the most recent 10 documents
-    $recentDocuments = array_slice($allDocuments, 0, 10);
-    
-    // Format the data for frontend
-    foreach ($recentDocuments as &$doc) {
-        $doc['formatted_date'] = date('d M Y', strtotime($doc['created_date']));
-        $doc['file_url'] = null;
+    // Sort by created_date (most recent first) if we have documents
+    if (!empty($allDocuments)) {
+        usort($allDocuments, function($a, $b) {
+            $dateA = strtotime($a['created_date'] ?? '1970-01-01');
+            $dateB = strtotime($b['created_date'] ?? '1970-01-01');
+            return $dateB - $dateA;
+        });
         
-        // Set file URL based on category
-        if ($doc['file_name']) {
-            switch ($doc['category']) {
-                case 'keluarga':
-                    $doc['file_url'] = '/ArsipKu/uploads/keluarga/' . $doc['file_name'];
+        // Take only the most recent 10 documents
+        $recentDocuments = array_slice($allDocuments, 0, 10);
+        
+        // Format the data for frontend
+        foreach ($recentDocuments as &$doc) {
+            // Ensure all required fields exist
+            $doc['id'] = $doc['id'] ?? 0;
+            $doc['title'] = $doc['title'] ?? 'Untitled';
+            $doc['description'] = $doc['description'] ?? '';
+            $doc['status'] = $doc['status'] ?? 'unknown';
+            $doc['category'] = $doc['category'] ?? 'unknown';
+            $doc['icon'] = $doc['icon'] ?? 'fas fa-file';
+            $doc['color'] = $doc['color'] ?? '#666666';
+            
+            // Format date safely
+            $doc['formatted_date'] = 'Unknown';
+            if (!empty($doc['created_date'])) {
+                $timestamp = strtotime($doc['created_date']);
+                if ($timestamp !== false) {
+                    $doc['formatted_date'] = date('d M Y', $timestamp);
+                }
+            }
+            
+            // Set file URL based on category
+            $doc['file_url'] = null;
+            if (!empty($doc['file_name'])) {
+                switch ($doc['category']) {
+                    case 'keluarga':
+                        $doc['file_url'] = '/ArsipKu/uploads/keluarga/' . $doc['file_name'];
+                        break;
+                    case 'arsip_vital':
+                        $doc['file_url'] = '/ArsipKu/uploads/arsip_vital/' . $doc['file_name'];
+                        break;
+                    case 'arsip_inactive':
+                        $doc['file_url'] = '/ArsipKu/uploads/arsip_inactive/' . $doc['file_name'];
+                        break;
+                }
+            }
+            
+            // Set status badge class
+            switch ($doc['status']) {
+                case 'aktif':
+                case 'in_progress':
+                    $doc['status_class'] = 'status-active';
                     break;
-                case 'arsip_vital':
-                    $doc['file_url'] = '/ArsipKu/uploads/arsip_vital/' . $doc['file_name'];
+                case 'complete':
+                case 'inaktif':
+                    $doc['status_class'] = 'status-inactive';
                     break;
-                case 'arsip_inactive':
-                    $doc['file_url'] = '/ArsipKu/uploads/arsip_inactive/' . $doc['file_name'];
+                case 'pending':
+                    $doc['status_class'] = 'status-pending';
                     break;
+                default:
+                    $doc['status_class'] = 'status-info';
+            }
+            
+            // Set thumbnail URL
+            $doc['thumbnail_url'] = 'https://via.placeholder.com/200x120/3c4043/9aa0a6?text=' . strtoupper($doc['category']);
+            if (!empty($doc['file_url']) && !empty($doc['file_name'])) {
+                $extension = strtolower(pathinfo($doc['file_name'], PATHINFO_EXTENSION));
+                if (in_array($extension, ['jpg', 'jpeg', 'png', 'gif', 'webp'])) {
+                    $doc['thumbnail_url'] = $doc['file_url'];
+                }
             }
         }
-        
-        // Set status badge class
-        switch ($doc['status']) {
-            case 'aktif':
-            case 'in_progress':
-                $doc['status_class'] = 'status-active';
-                break;
-            case 'complete':
-            case 'inaktif':
-                $doc['status_class'] = 'status-inactive';
-                break;
-            case 'pending':
-                $doc['status_class'] = 'status-pending';
-                break;
-            default:
-                $doc['status_class'] = 'status-info';
-        }
+    } else {
+        $recentDocuments = [];
     }
     
     $response = [
         'status' => 'success', 
         'data' => $recentDocuments,
-        'total' => count($recentDocuments)
+        'total' => count($recentDocuments),
+        'message' => count($recentDocuments) > 0 ? 'Data berhasil dimuat' : 'Belum ada dokumen terbaru'
     ];
 
-} catch (PDOException $e) {
+} catch (Exception $e) {
+    error_log("General error in get_recent_documents.php: " . $e->getMessage());
     $response = [
         'status' => 'error', 
-        'message' => 'Gagal mengambil data dokumen terbaru: ' . $e->getMessage(), 
+        'message' => 'Gagal mengambil data dokumen terbaru', 
         'error' => $e->getMessage()
     ];
 }
