@@ -14,11 +14,12 @@ class HomeManager {
         this.handleDragLeave = this.handleDragLeave.bind(this);
         this.handleDrop = this.handleDrop.bind(this);
         this.handleResize = this.handleResize.bind(this);
-        this.loadAgendaData = this.loadAgendaData.bind(this); // Pastikan ini terikat
-        this.loadHistoryData = this.loadHistoryData.bind(this); // Pastikan ini terikat
-        this.loadKeluargaData = this.loadKeluargaData.bind(this); // Binding untuk fungsi baru
-        this.loadArsipVitalData = this.loadArsipVitalData.bind(this); // Binding untuk fungsi baru
-        this.loadArsipInactiveData = this.loadArsipInactiveData.bind(this); // Binding untuk fungsi baru
+        this.loadAgendaData = this.loadAgendaData.bind(this);
+        this.loadHistoryData = this.loadHistoryData.bind(this);
+        this.loadKeluargaData = this.loadKeluargaData.bind(this);
+        this.loadArsipVitalData = this.loadArsipVitalData.bind(this);
+        this.loadArsipInactiveData = this.loadArsipInactiveData.bind(this);
+        this.loadRecentDocuments = this.loadRecentDocuments.bind(this); // NEW
     }
 
     /**
@@ -31,6 +32,7 @@ class HomeManager {
         this.bindEvents();
         this.initializeDefaultState();
         this.updateStats();
+        this.loadRecentDocuments(); // Load recent documents on init
         console.log('Home initialized successfully');
     }
 
@@ -168,6 +170,11 @@ class HomeManager {
         document.getElementById('disarankan-content')?.classList.remove('active');
         document.getElementById('notifikasi-content')?.classList.remove('active');
         document.getElementById(targetSectionId)?.classList.add('active');
+
+        // Load recent documents when "Terbaru" tab is clicked
+        if (targetSectionId === 'disarankan-content') {
+            this.loadRecentDocuments();
+        }
     }
 
     /**
@@ -205,6 +212,11 @@ class HomeManager {
                 document.querySelector(`.tab-button[data-target-section="${sectionId}"]`)?.classList.add('active');
                 document.getElementById('disarankan-content')?.classList.toggle('active', sectionId === 'disarankan-content');
                 document.getElementById('notifikasi-content')?.classList.toggle('active', sectionId === 'notifikasi-content');
+                
+                // Load recent documents when showing "disarankan-content"
+                if (sectionId === 'disarankan-content') {
+                    this.loadRecentDocuments();
+                }
             } else {
                 document.getElementById('disarankan-content')?.classList.remove('active');
                 document.getElementById('notifikasi-content')?.classList.remove('active');
@@ -216,13 +228,146 @@ class HomeManager {
                 this.loadAgendaData();
             } else if (sectionId === 'riwayat') {
                 this.loadHistoryData();
-            } else if (sectionId === 'keluarga') { // Load data for Keluarga
+            } else if (sectionId === 'keluarga') {
                 this.loadKeluargaData();
-            } else if (sectionId === 'arsip-vital') { // Load data for Arsip Vital
+            } else if (sectionId === 'arsip-vital') {
                 this.loadArsipVitalData();
-            } else if (sectionId === 'arsip-inactive') { // Load data for Arsip Inactive
+            } else if (sectionId === 'arsip-inactive') {
                 this.loadArsipInactiveData();
             }
+        }
+    }
+
+    /**
+     * NEW: Load Recent Documents from All Categories
+     */
+    loadRecentDocuments() {
+        const documentGrid = document.getElementById('documentGrid');
+        if (!documentGrid) return;
+
+        // Show loading state
+        documentGrid.innerHTML = '<div class="loading-state"><i class="fas fa-spinner fa-spin"></i><br>Memuat dokumen terbaru...</div>';
+
+        fetch('/ArsipKu/pages/get_recent_documents.php')
+            .then(res => {
+                if (!res.ok) {
+                    throw new Error(`HTTP error! status: ${res.status}`);
+                }
+                return res.json();
+            })
+            .then(response => {
+                if (response.status === 'error') {
+                    documentGrid.innerHTML = `<div class="empty-state"><i class="fas fa-exclamation-circle"></i><br>Error: ${response.message}</div>`;
+                    console.error("Server Error:", response.error);
+                    return;
+                }
+
+                const documents = response.data;
+                if (!documents || documents.length === 0) {
+                    documentGrid.innerHTML = '<div class="empty-state"><i class="fas fa-folder-open"></i><br>Belum ada dokumen terbaru</div>';
+                    return;
+                }
+
+                // Clear loading state
+                documentGrid.innerHTML = '';
+
+                // Create document cards
+                documents.forEach(doc => {
+                    const docCard = this.createRecentDocumentCard(doc);
+                    documentGrid.appendChild(docCard);
+                });
+
+                console.log(`Loaded ${documents.length} recent documents`);
+            })
+            .catch(err => {
+                documentGrid.innerHTML = `<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><br>Gagal memuat dokumen terbaru: ${err.message}</div>`;
+                console.error("Fetch Error for Recent Documents:", err);
+            });
+    }
+
+    /**
+     * NEW: Create Recent Document Card
+     */
+    createRecentDocumentCard(doc) {
+        const docCard = document.createElement('div');
+        docCard.className = 'document-card-gd recent-document-card';
+        docCard.dataset.id = doc.id;
+        docCard.dataset.category = doc.category;
+
+        // Determine thumbnail based on category and file type
+        let thumbnailContent = '';
+        if (doc.file_url && doc.file_name) {
+            const fileExt = doc.file_name.split('.').pop().toLowerCase();
+            if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(fileExt)) {
+                thumbnailContent = `<img src="${doc.file_url}" alt="${doc.title}" onerror="this.parentElement.innerHTML='<i class=\\'${doc.icon}\\'></i>'">`;
+            } else {
+                thumbnailContent = `<i class="${doc.icon}" style="color: ${doc.color}; font-size: 48px;"></i>`;
+            }
+        } else {
+            thumbnailContent = `<i class="${doc.icon}" style="color: ${doc.color}; font-size: 48px;"></i>`;
+        }
+
+        docCard.innerHTML = `
+            <div class="doc-thumbnail">
+                ${thumbnailContent}
+                <div class="doc-category-badge" style="background: ${doc.color}">
+                    ${this.getCategoryLabel(doc.category)}
+                </div>
+            </div>
+            <div class="doc-info">
+                <h4 class="doc-title">${doc.title}</h4>
+                <p class="doc-description">${doc.description || 'Tidak ada deskripsi'}</p>
+                <div class="doc-meta">
+                    <span class="doc-date">
+                        <i class="fas fa-calendar"></i> ${doc.formatted_date}
+                    </span>
+                    <span class="status-badge ${doc.status_class}">${doc.status}</span>
+                </div>
+            </div>
+            <button class="doc-options" onclick="showRecentDocumentOptions(event, '${doc.id}', '${doc.category}')">
+                <i class="fas fa-ellipsis-v"></i>
+            </button>
+        `;
+
+        // Add click handler to open document
+        docCard.addEventListener('click', (e) => {
+            if (!e.target.closest('.doc-options')) {
+                this.openRecentDocument(doc);
+            }
+        });
+
+        return docCard;
+    }
+
+    /**
+     * NEW: Get Category Label
+     */
+    getCategoryLabel(category) {
+        const labels = {
+            'keluarga': 'Keluarga',
+            'arsip_vital': 'Vital',
+            'arsip_inactive': 'Inactive',
+            'agenda': 'Agenda'
+        };
+        return labels[category] || category;
+    }
+
+    /**
+     * NEW: Open Recent Document
+     */
+    openRecentDocument(doc) {
+        console.log('Opening recent document:', doc);
+        
+        if (doc.file_url) {
+            // Open file in new tab
+            window.open(doc.file_url, '_blank');
+            this.showNotification(`Membuka ${doc.title}...`, 'info');
+        } else if (doc.category === 'agenda') {
+            // Navigate to agenda section
+            this.setActiveSection('agenda');
+            this.showNotification(`Menampilkan agenda: ${doc.title}`, 'info');
+        } else {
+            this.showNotification(`Detail ${doc.title} akan segera tersedia`, 'info');
         }
     }
 
@@ -371,6 +516,11 @@ class HomeManager {
         if (this.fileInput) {
             this.fileInput.value = '';
         }
+
+        // Reload recent documents to show newly uploaded files
+        setTimeout(() => {
+            this.loadRecentDocuments();
+        }, 1000);
     }
 
     /**
@@ -1054,6 +1204,88 @@ window.showDocumentOptions = function(event, documentId) {
     setTimeout(() => {
         document.addEventListener('click', closeMenu);
     }, 10);
+};
+
+// NEW: Show Recent Document Options
+window.showRecentDocumentOptions = function(event, documentId, category) {
+    event.stopPropagation();
+    console.log('Recent document options for:', documentId, category);
+
+    const existingMenu = document.querySelector('.context-menu');
+    if (existingMenu) {
+        existingMenu.remove();
+    }
+
+    const contextMenu = document.createElement('div');
+    contextMenu.className = 'context-menu';
+    contextMenu.innerHTML = `
+        <div class="context-menu-item" onclick="openRecentDocument('${documentId}', '${category}')">
+            <span>👁️</span> Lihat Detail
+        </div>
+        <div class="context-menu-item" onclick="navigateToCategory('${category}')">
+            <span>📂</span> Buka Kategori
+        </div>
+        <div class="context-menu-divider"></div>
+        <div class="context-menu-item" onclick="refreshRecentDocuments()">
+            <span>🔄</span> Refresh
+        </div>
+    `;
+
+    const rect = event.target.getBoundingClientRect();
+    contextMenu.style.cssText = `
+        position: fixed;
+        top: ${rect.bottom + 5}px;
+        left: ${rect.left}px;
+        z-index: 10000;
+        background: #2f3032;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        padding: 8px 0;
+        min-width: 180px;
+    `;
+
+    document.body.appendChild(contextMenu);
+
+    const closeMenu = (e) => {
+        if (!contextMenu.contains(e.target)) {
+            contextMenu.remove();
+            document.removeEventListener('click', closeMenu);
+        }
+    };
+
+    setTimeout(() => {
+        document.addEventListener('click', closeMenu);
+    }, 10);
+};
+
+window.openRecentDocument = function(documentId, category) {
+    if (window.home) {
+        // Find the document in the recent documents and open it
+        const docCard = document.querySelector(`[data-id="${documentId}"][data-category="${category}"]`);
+        if (docCard) {
+            docCard.click();
+        }
+    }
+    // Close context menu
+    document.querySelector('.context-menu')?.remove();
+};
+
+window.navigateToCategory = function(category) {
+    if (window.home) {
+        window.home.setActiveSection(category);
+    }
+    // Close context menu
+    document.querySelector('.context-menu')?.remove();
+};
+
+window.refreshRecentDocuments = function() {
+    if (window.home) {
+        window.home.loadRecentDocuments();
+        window.home.showNotification('Dokumen terbaru diperbarui', 'success');
+    }
+    // Close context menu
+    document.querySelector('.context-menu')?.remove();
 };
 
 window.downloadDocument = function(documentId) { if (window.home) { window.home.downloadDocument(documentId); } };
