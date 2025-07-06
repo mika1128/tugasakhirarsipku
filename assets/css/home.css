@@ -49,17 +49,17 @@ body {
 
 /* Card */
 .card {
-    background: #2f3032; /* Ubah atau pastikan ini menjadi warna gelap */
-    backdrop-filter: blur(10px); /* Opsional, jika Anda ingin efek blur */
+    background: #2f3032;
+    backdrop-filter: blur(10px);
     border-radius: 15px;
     padding: 30px;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
     margin-bottom: 20px;
-    color: #e8eaed; /* Pastikan teks di dalam card terlihat di dark mode */
+    color: #e8eaed;
 }
 
 .card h2 {
-    color: #e8eaed; /* Pastikan judul di card terlihat di dark mode */
+    color: #e8eaed;
     margin-bottom: 20px;
     display: flex;
     align-items: center;
@@ -76,26 +76,26 @@ body {
 table {
     width: 100%;
     border-collapse: collapse;
-    background: #2f3032; /* Latar belakang tabel untuk dark mode */
+    background: #2f3032;
 }
 
 table th,
 table td {
     padding: 12px 15px;
     text-align: left;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08); /* Garis pemisah baris */
-    color: #e8eaed; /* Warna teks di sel tabel */
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    color: #e8eaed;
 }
 
 table th {
-    background: linear-gradient(135deg, #4285f4, #8ab4f8); /* Warna header tabel */
+    background: linear-gradient(135deg, #4285f4, #8ab4f8);
     color: white;
     font-weight: 600;
     font-size: 14px;
 }
 
 table tr:hover {
-    background: rgba(138, 180, 248, 0.05); /* Efek hover baris */
+    background: rgba(138, 180, 248, 0.05);
 }
 
 /* Avatar in table */
@@ -103,7 +103,7 @@ table tr:hover {
     width: 35px;
     height: 35px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #4285f4, #8ab4f8); /* Warna avatar */
+    background: linear-gradient(135deg, #4285f4, #8ab4f8);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -121,23 +121,23 @@ table tr:hover {
     white-space: nowrap;
 }
 
-.status-active { /* Untuk 'in_progress' */
-    background: #4CAF50; /* Hijau */
+.status-active {
+    background: #4CAF50;
     color: white;
 }
 
-.status-inactive { /* Untuk 'complete' atau 'cancelled' */
-    background: #F44336; /* Merah */
+.status-inactive {
+    background: #F44336;
     color: white;
 }
 
-.status-pending { /* Untuk 'pending' */
-    background: #FFC107; /* Kuning */
-    color: #333; /* Teks gelap agar kontras */
+.status-pending {
+    background: #FFC107;
+    color: #333;
 }
 
 .status-info {
-    background: #2196F3; /* Biru */
+    background: #2196F3;
     color: white;
 }
 
@@ -151,17 +151,17 @@ table tr:hover {
 }
 
 .priority-high {
-    background: #f44336; /* Merah */
+    background: #f44336;
     color: white;
 }
 
 .priority-medium {
-    background: #ff9800; /* Oranye */
+    background: #ff9800;
     color: white;
 }
 
 .priority-low {
-    background: #2196f3; /* Biru */
+    background: #2196f3;
     color: white;
 }
 
@@ -169,8 +169,8 @@ table tr:hover {
 .btn {
     display: inline-flex;
     align-items: center;
-    gap: 5px; /* Jarak antara ikon dan teks */
-    padding: 8px 12px; /* Ukuran padding standar */
+    gap: 5px;
+    padding: 8px 12px;
     border: none;
     border-radius: 8px;
     cursor: pointer;
@@ -178,7 +178,7 @@ table tr:hover {
     font-weight: 500;
     text-decoration: none;
     transition: all 0.3s ease;
-    margin-right: 5px; /* Jarak antar tombol */
+    margin-right: 5px;
 }
 
 .btn-primary {
@@ -192,7 +192,7 @@ table tr:hover {
     box-shadow: 0 2px 8px rgba(66, 133, 244, 0.3);
 }
 
-.btn-sm { /* Untuk tombol kecil di tabel */
+.btn-sm {
     padding: 6px 10px;
     font-size: 12px;
 }
@@ -609,12 +609,140 @@ table tr:hover {
     justify-content: center;
 }
 
+/* Notification Grid */
+.notification-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.notification-card {
+    background: #2f3032;
+    border-radius: 12px;
+    padding: 20px;
+    border-left: 4px solid #4285f4;
+    transition: all 0.3s ease;
+}
+
+.notification-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.notification-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+}
+
+.notification-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    color: white;
+}
+
+.notification-icon.priority-high {
+    background: #f44336;
+}
+
+.notification-icon.priority-medium {
+    background: #ff9800;
+}
+
+.notification-icon.priority-low {
+    background: #4caf50;
+}
+
+.notification-meta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+}
+
+.notification-time {
+    font-size: 12px;
+    color: #9aa0a6;
+}
+
+.notification-priority {
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.notification-priority.priority-high {
+    background: rgba(244, 67, 54, 0.2);
+    color: #f44336;
+}
+
+.notification-priority.priority-medium {
+    background: rgba(255, 152, 0, 0.2);
+    color: #ff9800;
+}
+
+.notification-priority.priority-low {
+    background: rgba(76, 175, 80, 0.2);
+    color: #4caf50;
+}
+
+.notification-content {
+    margin-bottom: 15px;
+}
+
+.notification-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #e8eaed;
+    margin-bottom: 8px;
+}
+
+.notification-message {
+    font-size: 14px;
+    color: #bdc1c6;
+    line-height: 1.4;
+    margin-bottom: 8px;
+}
+
+.notification-details {
+    font-size: 12px;
+    color: #9aa0a6;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 8px 12px;
+    border-radius: 6px;
+    margin-top: 8px;
+}
+
+.notification-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.btn-secondary {
+    background: rgba(255, 255, 255, 0.1);
+    color: #e8eaed;
+}
+
+.btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
 /* Loading and Empty States */
 .loading-state, .empty-state {
     text-align: center;
     padding: 60px 20px;
     color: #9aa0a6;
-    grid-column: 1 / -1; /* Span all columns in grid */
+    grid-column: 1 / -1;
 }
 
 .loading-state i, .empty-state i {

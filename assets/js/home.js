@@ -14,12 +14,7 @@ class HomeManager {
         this.handleDragLeave = this.handleDragLeave.bind(this);
         this.handleDrop = this.handleDrop.bind(this);
         this.handleResize = this.handleResize.bind(this);
-        this.loadAgendaData = this.loadAgendaData.bind(this);
-        this.loadHistoryData = this.loadHistoryData.bind(this);
-        this.loadKeluargaData = this.loadKeluargaData.bind(this);
-        this.loadArsipVitalData = this.loadArsipVitalData.bind(this);
-        this.loadArsipInactiveData = this.loadArsipInactiveData.bind(this);
-        this.loadRecentDocuments = this.loadRecentDocuments.bind(this);
+        this.searchDocuments = this.searchDocuments.bind(this);
     }
 
     /**
@@ -32,7 +27,7 @@ class HomeManager {
         this.bindEvents();
         this.initializeDefaultState();
         this.updateStats();
-        this.loadRecentDocuments();
+        this.loadNotifications();
         console.log('Home initialized successfully');
     }
 
@@ -44,12 +39,14 @@ class HomeManager {
         this.contentSections = document.querySelectorAll('.main-content .content-section');
         this.fileInput = document.getElementById('fileInput');
         this.uploadArea = document.querySelector('.upload-area');
+        this.searchInput = document.querySelector('.search-input');
 
         console.log('Elements cached:', {
             tabButtons: this.tabButtons.length,
             contentSections: this.contentSections.length,
             fileInput: !!this.fileInput,
-            uploadArea: !!this.uploadArea
+            uploadArea: !!this.uploadArea,
+            searchInput: !!this.searchInput
         });
     }
 
@@ -59,6 +56,7 @@ class HomeManager {
     initializeDefaultState() {
         const defaultSection = 'disarankan-content';
         this.setActiveSection(defaultSection);
+        this.loadRecentDocuments();
     }
 
     /**
@@ -103,8 +101,6 @@ class HomeManager {
         if (this.fileInput) {
             this.fileInput.addEventListener('change', this.handleFileSelect);
             console.log('File input event listener attached');
-        } else {
-            console.error('File input not found!');
         }
 
         // Event untuk drag & drop
@@ -114,8 +110,6 @@ class HomeManager {
             this.uploadArea.addEventListener('dragleave', this.handleDragLeave);
             this.uploadArea.addEventListener('drop', this.handleDrop);
             console.log('Upload area event listeners attached');
-        } else {
-            console.error('Upload area not found!');
         }
 
         // Event untuk floating action button
@@ -126,9 +120,9 @@ class HomeManager {
         }
 
         // Event untuk search input (debounced)
-        const searchInput = document.querySelector('.search-input');
-        if (searchInput) {
-            searchInput.addEventListener('input', this.debounce((e) => this.searchDocuments(e.target.value), 300));
+        if (this.searchInput) {
+            this.searchInput.addEventListener('input', this.debounce((e) => this.searchDocuments(e.target.value), 300));
+            console.log('Search input event listener attached');
         }
     }
 
@@ -171,9 +165,9 @@ class HomeManager {
         document.getElementById('notifikasi-content')?.classList.remove('active');
         document.getElementById(targetSectionId)?.classList.add('active');
 
-        // Load recent documents when "Terbaru" tab is clicked
-        if (targetSectionId === 'disarankan-content') {
-            this.loadRecentDocuments();
+        // Load notifications if switching to notifications tab
+        if (targetSectionId === 'notifikasi-content') {
+            this.loadNotifications();
         }
     }
 
@@ -212,11 +206,6 @@ class HomeManager {
                 document.querySelector(`.tab-button[data-target-section="${sectionId}"]`)?.classList.add('active');
                 document.getElementById('disarankan-content')?.classList.toggle('active', sectionId === 'disarankan-content');
                 document.getElementById('notifikasi-content')?.classList.toggle('active', sectionId === 'notifikasi-content');
-                
-                // Load recent documents when showing "disarankan-content"
-                if (sectionId === 'disarankan-content') {
-                    this.loadRecentDocuments();
-                }
             } else {
                 document.getElementById('disarankan-content')?.classList.remove('active');
                 document.getElementById('notifikasi-content')?.classList.remove('active');
@@ -239,239 +228,326 @@ class HomeManager {
     }
 
     /**
-     * Load Recent Documents from All Categories
+     * Load recent documents
      */
     loadRecentDocuments() {
         const documentGrid = document.getElementById('documentGrid');
         if (!documentGrid) return;
 
-        // Show loading state
         documentGrid.innerHTML = '<div class="loading-state"><i class="fas fa-spinner fa-spin"></i><br>Memuat dokumen terbaru...</div>';
 
         fetch('/ArsipKu/pages/get_recent_documents.php')
-            .then(res => {
-                if (!res.ok) {
-                    throw new Error(`HTTP error! status: ${res.status}`);
-                }
-                return res.json();
-            })
+            .then(res => res.json())
             .then(response => {
-                if (response.status === 'error') {
-                    documentGrid.innerHTML = `
-                        <div class="empty-state">
-                            <i class="fas fa-exclamation-circle"></i><br>
-                            Error: ${response.message}
-                            <small>Klik tombol di bawah untuk mencoba lagi</small>
-                            <br><br>
-                            <button class="btn btn-primary" onclick="window.home.loadRecentDocuments()">
-                                <i class="fas fa-redo"></i> Coba Lagi
-                            </button>
-                        </div>
-                    `;
-                    console.error("Server Error:", response.error);
-                    return;
+                if (response.status === 'success' && response.data) {
+                    this.renderDocuments(response.data, documentGrid);
+                } else {
+                    documentGrid.innerHTML = '<div class="empty-state"><i class="fas fa-folder-open"></i><h3>Belum ada dokumen</h3><p>Mulai dengan mengunggah dokumen pertama Anda</p></div>';
                 }
-
-                const documents = response.data;
-                if (!documents || documents.length === 0) {
-                    documentGrid.innerHTML = `
-                        <div class="empty-state">
-                            <i class="fas fa-folder-open"></i><br>
-                            Belum ada dokumen terbaru
-                            <small>Upload dokumen pertama Anda untuk melihatnya di sini</small>
-                        </div>
-                    `;
-                    return;
-                }
-
-                // Clear loading state
-                documentGrid.innerHTML = '';
-
-                // Create document cards
-                documents.forEach(doc => {
-                    const docCard = this.createRecentDocumentCard(doc);
-                    documentGrid.appendChild(docCard);
-                });
-
-                console.log(`Loaded ${documents.length} recent documents`);
             })
-            .catch(err => {
-                documentGrid.innerHTML = `
-                    <div class="empty-state">
-                        <i class="fas fa-exclamation-triangle"></i><br>
-                        Gagal memuat dokumen terbaru: ${err.message}
-                        <small>Periksa koneksi internet Anda dan coba lagi</small>
-                        <br><br>
-                        <button class="btn btn-primary" onclick="window.home.loadRecentDocuments()">
-                            <i class="fas fa-redo"></i> Coba Lagi
-                        </button>
-                    </div>
-                `;
-                console.error("Fetch Error for Recent Documents:", err);
+            .catch(error => {
+                console.error('Error loading recent documents:', error);
+                documentGrid.innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><h3>Gagal memuat dokumen</h3><p>Terjadi kesalahan saat memuat data</p></div>';
             });
     }
 
     /**
-     * Create Recent Document Card
+     * Load notifications
      */
-    createRecentDocumentCard(doc) {
+    loadNotifications() {
+        const notificationContent = document.getElementById('notifikasi-content');
+        if (!notificationContent) return;
+
+        // Clear existing content except title and subtitle
+        const existingGrid = notificationContent.querySelector('.notification-grid');
+        if (existingGrid) {
+            existingGrid.remove();
+        }
+
+        const notificationGrid = document.createElement('div');
+        notificationGrid.className = 'notification-grid';
+        notificationGrid.innerHTML = '<div class="loading-state"><i class="fas fa-spinner fa-spin"></i><br>Memuat notifikasi...</div>';
+        notificationContent.appendChild(notificationGrid);
+
+        fetch('/ArsipKu/pages/get_notifications.php')
+            .then(res => res.json())
+            .then(response => {
+                if (response.status === 'success' && response.data && response.data.length > 0) {
+                    this.renderNotifications(response.data, notificationGrid);
+                } else {
+                    notificationGrid.innerHTML = '<div class="empty-state"><i class="fas fa-bell-slash"></i><h3>Belum ada notifikasi</h3><p>Notifikasi akan muncul di sini</p></div>';
+                }
+            })
+            .catch(error => {
+                console.error('Error loading notifications:', error);
+                notificationGrid.innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><h3>Gagal memuat notifikasi</h3><p>Terjadi kesalahan saat memuat data</p></div>';
+            });
+    }
+
+    /**
+     * Render notifications
+     */
+    renderNotifications(notifications, container) {
+        container.innerHTML = '';
+        
+        notifications.forEach(notification => {
+            const notificationCard = document.createElement('div');
+            notificationCard.className = 'notification-card';
+            
+            const priorityClass = notification.priority === 'high' ? 'priority-high' : 
+                                notification.priority === 'medium' ? 'priority-medium' : 'priority-low';
+            
+            notificationCard.innerHTML = `
+                <div class="notification-header">
+                    <div class="notification-icon ${priorityClass}">
+                        <i class="${notification.icon || 'fas fa-bell'}"></i>
+                    </div>
+                    <div class="notification-meta">
+                        <span class="notification-time">${this.formatDate(notification.created_at)}</span>
+                        <span class="notification-priority ${priorityClass}">${notification.priority}</span>
+                    </div>
+                </div>
+                <div class="notification-content">
+                    <h4 class="notification-title">${notification.title}</h4>
+                    <p class="notification-message">${notification.message}</p>
+                    ${notification.details ? `<div class="notification-details">${notification.details}</div>` : ''}
+                </div>
+                <div class="notification-actions">
+                    <button class="btn btn-sm btn-primary" onclick="window.home.markAsRead(${notification.id})">
+                        <i class="fas fa-check"></i> Tandai Dibaca
+                    </button>
+                    ${notification.action_url ? `<a href="${notification.action_url}" class="btn btn-sm btn-secondary">Lihat Detail</a>` : ''}
+                </div>
+            `;
+            
+            container.appendChild(notificationCard);
+        });
+    }
+
+    /**
+     * Mark notification as read
+     */
+    markAsRead(notificationId) {
+        fetch('/ArsipKu/pages/mark_notification_read.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ id: notificationId })
+        })
+        .then(res => res.json())
+        .then(response => {
+            if (response.status === 'success') {
+                this.loadNotifications(); // Reload notifications
+                this.showNotification('Notifikasi ditandai sebagai dibaca', 'success');
+            }
+        })
+        .catch(error => {
+            console.error('Error marking notification as read:', error);
+        });
+    }
+
+    /**
+     * Render documents
+     */
+    renderDocuments(documents, container) {
+        container.innerHTML = '';
+        
+        documents.forEach(doc => {
+            const docCard = this.createDocumentCard(doc);
+            container.appendChild(docCard);
+        });
+    }
+
+    /**
+     * Create document card
+     */
+    createDocumentCard(doc) {
         const docCard = document.createElement('div');
         docCard.className = 'document-card-gd recent-document-card';
         docCard.dataset.id = doc.id;
         docCard.dataset.category = doc.category;
 
-        // Determine thumbnail based on category and file type
-        let thumbnailContent = '';
-        if (doc.file_url && doc.file_name) {
-            const fileExt = doc.file_name.split('.').pop().toLowerCase();
-            if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(fileExt)) {
-                thumbnailContent = `<img src="${doc.file_url}" alt="${doc.title}" onerror="this.parentElement.innerHTML='<i class=\\'${doc.icon}\\'></i>'">`;
-            } else {
-                thumbnailContent = `<i class="${doc.icon}" style="color: ${doc.color}; font-size: 48px;"></i>`;
-            }
-        } else {
-            thumbnailContent = `<i class="${doc.icon}" style="color: ${doc.color}; font-size: 48px;"></i>`;
-        }
-
-        // Determine if file is downloadable
-        const isDownloadable = doc.file_url && doc.file_name && doc.category !== 'agenda';
-
         docCard.innerHTML = `
             <div class="doc-thumbnail">
-                ${thumbnailContent}
-                <div class="doc-category-badge" style="background: ${doc.color}">
-                    ${this.getCategoryLabel(doc.category)}
-                </div>
+                <img src="${doc.thumbnail_url}" alt="${doc.title}" onerror="this.src='https://via.placeholder.com/200x120/3c4043/9aa0a6?text=${encodeURIComponent(doc.category.toUpperCase())}'">
+                <div class="doc-category-badge" style="background: ${doc.color}">${doc.category.toUpperCase()}</div>
             </div>
             <div class="doc-info">
                 <h4 class="doc-title">${doc.title}</h4>
                 <p class="doc-description">${doc.description || 'Tidak ada deskripsi'}</p>
                 <div class="doc-meta">
-                    <span class="doc-date">
-                        <i class="fas fa-calendar"></i> ${doc.formatted_date}
-                    </span>
+                    <div class="doc-date">
+                        <i class="fas fa-calendar"></i>
+                        <span>${doc.formatted_date}</span>
+                    </div>
                     <span class="status-badge ${doc.status_class}">${doc.status}</span>
                 </div>
-                ${isDownloadable ? `
-                    <div class="doc-actions" style="margin-top: 10px;">
-                        <button class="btn btn-primary btn-sm" onclick="window.downloadDocument('${doc.id}', '${doc.category}', event)" title="Download ${this.getFileTypeLabel(doc.file_name)}">
-                            <i class="fas fa-download"></i> Download ${this.getFileTypeLabel(doc.file_name)}
-                        </button>
-                    </div>
-                ` : ''}
+                <div class="doc-actions">
+                    <button class="btn btn-primary btn-sm" onclick="window.home.viewDocument('${doc.id}', '${doc.category}')">
+                        <i class="fas fa-eye"></i> Lihat Detail
+                    </button>
+                </div>
             </div>
-            <button class="doc-options" onclick="showRecentDocumentOptions(event, '${doc.id}', '${doc.category}')">
+            <button class="doc-options" onclick="window.home.showDocumentOptions(event, '${doc.id}', '${doc.category}')">
                 <i class="fas fa-ellipsis-v"></i>
             </button>
         `;
-
-        // Add click handler to open document (but not when clicking download button)
-        docCard.addEventListener('click', (e) => {
-            if (!e.target.closest('.doc-options') && !e.target.closest('.doc-actions')) {
-                this.openRecentDocument(doc);
-            }
-        });
 
         return docCard;
     }
 
     /**
-     * Get File Type Label for Download Button
+     * Show document options menu
      */
-    getFileTypeLabel(fileName) {
-        if (!fileName) return 'File';
+    showDocumentOptions(event, documentId, category) {
+        event.stopPropagation();
         
-        const extension = fileName.split('.').pop().toLowerCase();
-        const typeLabels = {
-            // Microsoft Office
-            'doc': 'Word',
-            'docx': 'Word',
-            'xls': 'Excel',
-            'xlsx': 'Excel',
-            'ppt': 'PowerPoint',
-            'pptx': 'PowerPoint',
-            
-            // PDF
-            'pdf': 'PDF',
-            
-            // Images
-            'jpg': 'Gambar',
-            'jpeg': 'Gambar',
-            'png': 'Gambar',
-            'gif': 'Gambar',
-            'bmp': 'Gambar',
-            'webp': 'Gambar',
-            
-            // Text
-            'txt': 'Text',
-            'rtf': 'RTF',
-            'csv': 'CSV',
-            
-            // Archives
-            'zip': 'ZIP',
-            'rar': 'RAR',
-            '7z': '7Z'
-        };
-
-        return typeLabels[extension] || 'File';
-    }
-
-    /**
-     * Get Category Label
-     */
-    getCategoryLabel(category) {
-        const labels = {
-            'keluarga': 'Keluarga',
-            'arsip_vital': 'Vital',
-            'arsip_inactive': 'Inactive',
-            'agenda': 'Agenda'
-        };
-        return labels[category] || category;
-    }
-
-    /**
-     * Open Recent Document
-     */
-    openRecentDocument(doc) {
-        console.log('Opening recent document:', doc);
-        
-        if (doc.file_url) {
-            // Open file in new tab
-            window.open(doc.file_url, '_blank');
-            this.showNotification(`Membuka ${doc.title}...`, 'info');
-        } else if (doc.category === 'agenda') {
-            // Navigate to agenda section
-            this.setActiveSection('agenda');
-            this.showNotification(`Menampilkan agenda: ${doc.title}`, 'info');
-        } else {
-            this.showNotification(`Detail ${doc.title} akan segera tersedia`, 'info');
+        const existingMenu = document.querySelector('.context-menu');
+        if (existingMenu) {
+            existingMenu.remove();
         }
+
+        const contextMenu = document.createElement('div');
+        contextMenu.className = 'context-menu';
+        contextMenu.innerHTML = `
+            <div class="context-menu-item" onclick="window.home.viewDocument('${documentId}', '${category}')">
+                <i class="fas fa-eye"></i> Lihat Detail
+            </div>
+            <div class="context-menu-item" onclick="window.home.downloadDocument('${documentId}', '${category}')">
+                <i class="fas fa-download"></i> Download
+            </div>
+            <div class="context-menu-divider"></div>
+            <div class="context-menu-item context-menu-danger" onclick="window.home.deleteDocument('${documentId}', '${category}')">
+                <i class="fas fa-trash"></i> Hapus
+            </div>
+        `;
+
+        const rect = event.target.getBoundingClientRect();
+        contextMenu.style.cssText = `
+            position: fixed;
+            top: ${rect.bottom + 5}px;
+            left: ${rect.left}px;
+            z-index: 10000;
+        `;
+
+        document.body.appendChild(contextMenu);
+
+        const closeMenu = (e) => {
+            if (!contextMenu.contains(e.target)) {
+                contextMenu.remove();
+                document.removeEventListener('click', closeMenu);
+            }
+        };
+
+        setTimeout(() => {
+            document.addEventListener('click', closeMenu);
+        }, 10);
     }
 
     /**
-     * Download Document
+     * View document
+     */
+    viewDocument(documentId, category) {
+        this.showNotification(`Membuka detail dokumen ${category}...`, 'info');
+        // Implement view logic here
+    }
+
+    /**
+     * Download document
      */
     downloadDocument(documentId, category) {
-        console.log('Downloading document:', documentId, category);
+        this.showNotification('Memulai download...', 'info');
         
-        // Show loading notification
-        this.showNotification('Mempersiapkan download...', 'info');
-        
-        // Create download URL
         const downloadUrl = `/ArsipKu/pages/download_document.php?id=${documentId}&category=${category}`;
         
         // Create temporary link and trigger download
         const link = document.createElement('a');
         link.href = downloadUrl;
-        link.style.display = 'none';
+        link.download = '';
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
         
-        // Show success notification
-        setTimeout(() => {
-            this.showNotification('Download dimulai...', 'success');
-        }, 500);
+        this.showNotification('Download dimulai', 'success');
+    }
+
+    /**
+     * Delete document
+     */
+    deleteDocument(documentId, category) {
+        if (confirm('Apakah Anda yakin ingin menghapus dokumen ini?')) {
+            this.showNotification('Menghapus dokumen...', 'info');
+            // Implement delete logic here
+        }
+    }
+
+    /**
+     * Search documents
+     */
+    searchDocuments(query) {
+        console.log('Searching for:', query);
+        
+        const documentGrids = [
+            document.getElementById('documentGrid'),
+            document.getElementById('documentGridDokumenSaya')
+        ];
+
+        documentGrids.forEach(grid => {
+            if (!grid) return;
+            
+            const cards = grid.querySelectorAll('.document-card-gd');
+            
+            if (!query.trim()) {
+                cards.forEach(card => card.style.display = '');
+                return;
+            }
+
+            cards.forEach(card => {
+                const title = card.querySelector('.doc-title')?.textContent.toLowerCase() || '';
+                const description = card.querySelector('.doc-description')?.textContent.toLowerCase() || '';
+                const searchText = `${title} ${description}`;
+
+                if (searchText.includes(query.toLowerCase())) {
+                    card.style.display = '';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        });
+
+        // Also search in table sections
+        this.searchInTables(query);
+    }
+
+    /**
+     * Search in tables
+     */
+    searchInTables(query) {
+        const tables = ['agenda-table', 'history-table', 'keluarga-table', 'arsip-vital-table', 'arsip-inactive-table'];
+        
+        tables.forEach(tableId => {
+            const table = document.getElementById(tableId);
+            if (!table) return;
+            
+            const rows = table.querySelectorAll('tbody tr');
+            
+            rows.forEach(row => {
+                if (row.querySelector('.loading') || row.querySelector('.empty-state')) return;
+                
+                const cells = row.querySelectorAll('td');
+                let rowText = '';
+                cells.forEach(cell => {
+                    rowText += cell.textContent.toLowerCase() + ' ';
+                });
+                
+                if (!query.trim() || rowText.includes(query.toLowerCase())) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
     }
 
     /**
@@ -594,9 +670,6 @@ class HomeManager {
     async processFiles(files) {
         console.log(`Processing ${files.length} files...`);
 
-        // Hapus dokumen dummy saat ada unggahan baru
-        document.querySelectorAll('.document-card-gd[data-dummy="true"]').forEach(doc => doc.remove());
-
         files.forEach(file => {
             const fileObj = {
                 id: Date.now() + Math.random(),
@@ -619,11 +692,6 @@ class HomeManager {
         if (this.fileInput) {
             this.fileInput.value = '';
         }
-
-        // Reload recent documents to show newly uploaded files
-        setTimeout(() => {
-            this.loadRecentDocuments();
-        }, 1000);
     }
 
     /**
@@ -646,76 +714,22 @@ class HomeManager {
     }
 
     /**
-     * Helper function to create a document card DOM element
-     */
-    createDocumentCard(file) {
-        const docCard = document.createElement('div');
-        docCard.className = 'document-card-gd';
-        docCard.dataset.id = file.id;
-        if (!file.file) {
-            docCard.dataset.dummy = 'true';
-        }
-
-        let thumbnailUrl = 'https://via.placeholder.com/200x120/3c4043/9aa0a6?text=' + encodeURIComponent(this.getFileType(file.type));
-
-        if (file.type.includes('image') && file.file instanceof File) {
-            thumbnailUrl = URL.createObjectURL(file.file);
-        } else if (file.type.includes('image') && file.thumbnail) {
-            thumbnailUrl = file.thumbnail;
-        }
-
-        docCard.innerHTML = `
-            <div class="doc-thumbnail">
-                <img src="${thumbnailUrl}" alt="${file.name}" onerror="this.src='https://via.placeholder.com/200x120/3c4043/9aa0a6?text=${encodeURIComponent(this.getFileType(file.type))}'">
-            </div>
-            <div class="doc-info">
-                <h4 class="doc-title">${file.name}</h4>
-                <div class="doc-meta">
-                    <img src="${file.ownerAvatar || 'https://via.placeholder.com/24/F0F0F0/000000?text=U'}" alt="${file.ownerName || 'User'}" class="doc-owner-avatar">
-                    <span class="doc-owner-name">${file.ownerName || 'Anda'}</span>
-                    <span class="doc-date">${this.formatDate(file.uploadDate)}</span>
-                </div>
-            </div>
-            <button class="doc-options" onclick="showDocumentOptions(event, '${file.id}')"><i class="fas fa-ellipsis-v"></i></button>
-        `;
-
-        // Add click handler to open document
-        docCard.addEventListener('click', () => this.openDocument(file.id));
-
-        return docCard;
-    }
-
-    /**
      * Update statistics
      */
     updateStats() {
         const totalDocsDisarankan = document.getElementById('documentGrid')?.querySelectorAll('.document-card-gd').length || 0;
         const totalDocsDokumenSaya = document.getElementById('documentGridDokumenSaya')?.querySelectorAll('.document-card-gd').length || 0;
-        const totalDocs = Math.max(totalDocsDisarankan, totalDocsDokumenSaya); // Avoid double counting
+        const totalDocs = Math.max(totalDocsDisarankan, totalDocsDokumenSaya);
 
         this.animateNumber('totalDocs', totalDocs);
-        this.animateNumber('todayUploads', totalDocs); // For demo, all uploads are "today"
+        this.animateNumber('todayUploads', totalDocs);
         this.animateNumber('activeUsers', 1);
 
-        // Calculate total size (simplified)
         let totalSize = 0;
         document.querySelectorAll('.document-card-gd').forEach(card => {
-            totalSize += 1; // 1MB per document for demo
+            totalSize += 1;
         });
         document.getElementById('totalSize').textContent = `${totalSize} MB`;
-    }
-
-    /**
-     * Get file type string
-     */
-    getFileType(type) {
-        if (type.includes('pdf')) return 'PDF';
-        if (type.includes('word') || type.includes('document')) return 'DOC';
-        if (type.includes('sheet') || type.includes('excel')) return 'XLS';
-        if (type.includes('presentation') || type.includes('powerpoint')) return 'PPT';
-        if (type.includes('image')) return 'IMG';
-        if (type.includes('text')) return 'TXT';
-        return 'FILE';
     }
 
     /**
@@ -759,14 +773,12 @@ class HomeManager {
      * Show notification to user
      */
     showNotification(message, type = 'info') {
-        // Remove existing notifications
         document.querySelectorAll('.notification').forEach(n => n.remove());
 
         const notification = document.createElement('div');
         notification.className = `notification notification-${type}`;
         notification.textContent = message;
 
-        // Add styles if not exists (ini seharusnya ada di CSS, tapi untuk demo cepat bisa di sini)
         if (!document.getElementById('notification-styles')) {
             const style = document.createElement('style');
             style.id = 'notification-styles';
@@ -798,7 +810,6 @@ class HomeManager {
 
         document.body.appendChild(notification);
 
-        // Auto remove after 3 seconds
         setTimeout(() => {
             notification.style.transform = 'translateX(100%)';
             setTimeout(() => notification.remove(), 300);
@@ -846,55 +857,18 @@ class HomeManager {
         };
     }
 
-    /**
-     * Search functionality
-     */
-    searchDocuments(query) {
-        console.log('Searching for:', query);
-        const cards = document.querySelectorAll('.document-card-gd');
-
-        if (!query.trim()) {
-            cards.forEach(card => card.style.display = '');
-            return;
-        }
-
-        cards.forEach(card => {
-            const title = card.querySelector('.doc-title')?.textContent.toLowerCase() || '';
-            const owner = card.querySelector('.doc-owner-name')?.textContent.toLowerCase() || '';
-            const searchText = `${title} ${owner}`;
-
-            if (searchText.includes(query.toLowerCase())) {
-                card.style.display = '';
-            } else {
-                card.style.display = 'none';
-            }
-        });
-    }
-
-    /**
-     * Open document
-     */
-    openDocument(documentId) {
-        console.log('Opening document:', documentId);
-        this.showNotification('Membuka dokumen...', 'info');
-        // Implement document opening logic here
-    }
-
+    // Load data methods for different sections
     loadAgendaData() {
         const tbody = document.querySelector('#agenda-table tbody');
+        if (!tbody) return;
+        
         tbody.innerHTML = '<tr><td colspan="9" class="loading"><i class="fas fa-spinner fa-spin"></i><br>Memuat data agenda...</td></tr>';
 
         fetch('/ArsipKu/pages/get_agenda.php')
-            .then(res => {
-                if (!res.ok) {
-                    throw new Error(`HTTP error! status: ${res.status}`);
-                }
-                return res.json();
-            })
+            .then(res => res.json())
             .then(response => {
                 if (response.status === 'error') {
                     tbody.innerHTML = `<tr><td colspan="9" class="empty-state">Error: ${response.message}</td></tr>`;
-                    console.error("Server Error:", response.error);
                     return;
                 }
 
@@ -931,32 +905,27 @@ class HomeManager {
                             <td>${agenda.location || '-'}</td>
                             <td><span class="status-badge ${statusClass}">${agenda.status}</span></td>
                             <td><span class="priority-badge ${priorityClass}">${agenda.priority}</span></td>
-                            </tr>
+                        </tr>
                     `;
                 });
             })
             .catch(err => {
-                tbody.innerHTML = `<tr><td colspan="9" class="empty-state">Gagal memuat data agenda: ${err.message}. Pastikan file PHP ada dan tidak ada error server.</td></tr>`;
-                console.error("Fetch Error for Agenda:", err);
+                tbody.innerHTML = `<tr><td colspan="9" class="empty-state">Gagal memuat data: ${err.message}</td></tr>`;
+                console.error("Fetch Error:", err);
             });
     }
 
-
     loadHistoryData() {
         const tbody = document.querySelector('#history-table tbody');
+        if (!tbody) return;
+        
         tbody.innerHTML = '<tr><td colspan="5" class="loading"><i class="fas fa-spinner fa-spin"></i><br>Memuat riwayat agenda...</td></tr>';
 
         fetch('/ArsipKu/pages/get_history.php')
-            .then(res => {
-                if (!res.ok) {
-                    throw new Error(`HTTP error! status: ${res.status}`);
-                }
-                return res.json();
-            })
+            .then(res => res.json())
             .then(response => {
                 if (response.status === 'error') {
                     tbody.innerHTML = `<tr><td colspan="5" class="empty-state">Error: ${response.message}</td></tr>`;
-                    console.error("Server Error:", response.error);
                     return;
                 }
 
@@ -984,31 +953,27 @@ class HomeManager {
                             <td>${agenda.title}</td>
                             <td>${agenda.end_date || agenda.start_date}</td>
                             <td><span class="status-badge ${statusClass}">${agenda.status}</span></td>
-                            </tr>
+                        </tr>
                     `;
                 });
             })
             .catch(err => {
-                tbody.innerHTML = `<tr><td colspan="5" class="empty-state">Gagal memuat riwayat data: ${err.message}. Pastikan file PHP ada dan tidak ada error server.</td></tr>`;
-                console.error("Fetch Error for History:", err);
+                tbody.innerHTML = `<tr><td colspan="5" class="empty-state">Gagal memuat riwayat data: ${err.message}</td></tr>`;
+                console.error("Fetch Error:", err);
             });
     }
 
     loadKeluargaData() {
         const tbody = document.querySelector('#keluarga-table tbody');
+        if (!tbody) return;
+        
         tbody.innerHTML = '<tr><td colspan="7" class="loading"><i class="fas fa-spinner fa-spin"></i><br>Memuat data dokumen keluarga...</td></tr>';
 
         fetch('/ArsipKu/pages/get_keluarga_dokumen.php')
-            .then(res => {
-                if (!res.ok) {
-                    throw new Error(`HTTP error! status: ${res.status}`);
-                }
-                return res.json();
-            })
+            .then(res => res.json())
             .then(response => {
                 if (response.status === 'error') {
-                    tbody.innerHTML = `<tr><td colspan="7" class="empty-state">Error: ${response.message}</td></tr>`;
-                    console.error("Server Error:", response.error);
+                    tbody.innerHTML = `<tr><td colspan="7" class="empty-state">Error: ${response.message}</td></tr>';
                     return;
                 }
 
@@ -1019,9 +984,9 @@ class HomeManager {
                 }
 
                 tbody.innerHTML = '';
-                data.forEach((item) => {
+                data.forEach((item, index) => {
                     let statusClass = item.status === 'aktif' ? 'status-active' : 'status-inactive';
-                    const fileLink = item.dokumen ? `<a href="/ArsipKu/uploads/keluarga/${item.dokumen}" target="_blank" class="btn btn-primary btn-sm"><i class="fas fa-file"></i> Lihat</a>` : 'Tidak Ada Dokumen';
+                    const fileLink = item.dokumen ? `<a href="/ArsipKu/uploads/keluarga/${item.dokumen}" target="_blank"><i class="fas fa-file"></i> Lihat Dokumen</a>` : 'Tidak Ada Dokumen';
 
                     tbody.innerHTML += `
                         <tr>
@@ -1032,33 +997,29 @@ class HomeManager {
                             <td>${item.tanggal_dibuat}</td>
                             <td><span class="status-badge ${statusClass}">${item.status}</span></td>
                             <td>
-                                <button class="btn btn-primary btn-sm" onclick="openDocument('${item.id}', 'keluarga')"><i class="fas fa-eye"></i> Lihat</button>
+                                <button class="btn btn-primary btn-sm" onclick="window.home.viewDocument('${item.id}', 'keluarga')"><i class="fas fa-eye"></i></button>
                             </td>
                         </tr>
                     `;
                 });
             })
             .catch(err => {
-                tbody.innerHTML = `<tr><td colspan="7" class="empty-state">Gagal memuat data dokumen keluarga: ${err.message}. Pastikan file PHP ada dan tidak ada error server.</td></tr>`;
-                console.error("Fetch Error for Keluarga Dokumen:", err);
+                tbody.innerHTML = `<tr><td colspan="7" class="empty-state">Gagal memuat data dokumen keluarga: ${err.message}</td></tr>`;
+                console.error("Fetch Error:", err);
             });
     }
 
     loadArsipVitalData() {
         const tbody = document.querySelector('#arsip-vital-table tbody');
+        if (!tbody) return;
+        
         tbody.innerHTML = '<tr><td colspan="8" class="loading"><i class="fas fa-spinner fa-spin"></i><br>Memuat data arsip vital...</td></tr>';
 
         fetch('/ArsipKu/pages/get_arsip_vital.php')
-            .then(res => {
-                if (!res.ok) {
-                    throw new Error(`HTTP error! status: ${res.status}`);
-                }
-                return res.json();
-            })
+            .then(res => res.json())
             .then(response => {
                 if (response.status === 'error') {
                     tbody.innerHTML = `<tr><td colspan="8" class="empty-state">Error: ${response.message}</td></tr>`;
-                    console.error("Server Error:", response.error);
                     return;
                 }
 
@@ -1075,11 +1036,9 @@ class HomeManager {
                         statusClass = 'status-active';
                     } else if (item.status === 'inaktif') {
                         statusClass = 'status-inactive';
-                    } else if (item.status === 'rusak') {
-                        statusClass = 'status-inactive'; // Menggunakan inactive untuk rusak
                     }
 
-                    const fileLink = item.gambar_surat ? `<a href="/ArsipKu/uploads/arsip_vital/${item.gambar_surat}" target="_blank" class="btn btn-primary btn-sm"><i class="fas fa-file-alt"></i> Lihat</a>` : 'Tidak Ada File';
+                    const fileLink = item.gambar_surat ? `<a href="/ArsipKu/uploads/arsip_vital/${item.gambar_surat}" target="_blank"><i class="fas fa-file-alt"></i> Lihat File</a>` : 'Tidak Ada File';
                     const lamaSurat = item.tahun_dibuat ? (new Date().getFullYear() - item.tahun_dibuat) : '-';
 
                     tbody.innerHTML += `
@@ -1092,33 +1051,29 @@ class HomeManager {
                             <td>${item.tahun_dibuat}</td>
                             <td>${lamaSurat} tahun</td>
                             <td>
-                                <button class="btn btn-primary btn-sm" onclick="openDocument('${item.id}', 'arsip-vital')"><i class="fas fa-eye"></i> Lihat</button>
+                                <button class="btn btn-primary btn-sm" onclick="window.home.viewDocument('${item.id}', 'arsip_vital')"><i class="fas fa-eye"></i></button>
                             </td>
                         </tr>
                     `;
                 });
             })
             .catch(err => {
-                tbody.innerHTML = `<tr><td colspan="8" class="empty-state">Gagal memuat data arsip vital: ${err.message}. Pastikan file PHP ada dan tidak ada error server.</td></tr>`;
-                console.error("Fetch Error for Arsip Vital:", err);
+                tbody.innerHTML = `<tr><td colspan="8" class="empty-state">Gagal memuat data arsip vital: ${err.message}</td></tr>`;
+                console.error("Fetch Error:", err);
             });
     }
 
     loadArsipInactiveData() {
         const tbody = document.querySelector('#arsip-inactive-table tbody');
+        if (!tbody) return;
+        
         tbody.innerHTML = '<tr><td colspan="8" class="loading"><i class="fas fa-spinner fa-spin"></i><br>Memuat data arsip inactive...</td></tr>';
 
         fetch('/ArsipKu/pages/get_arsip_inactive.php')
-            .then(res => {
-                if (!res.ok) {
-                    throw new Error(`HTTP error! status: ${res.status}`);
-                }
-                return res.json();
-            })
+            .then(res => res.json())
             .then(response => {
                 if (response.status === 'error') {
                     tbody.innerHTML = `<tr><td colspan="8" class="empty-state">Error: ${response.message}</td></tr>`;
-                    console.error("Server Error:", response.error);
                     return;
                 }
 
@@ -1135,11 +1090,9 @@ class HomeManager {
                         statusClass = 'status-active';
                     } else if (item.status === 'inaktif') {
                         statusClass = 'status-inactive';
-                    } else if (item.status === 'rusak') {
-                        statusClass = 'status-inactive'; // Menggunakan inactive untuk rusak
                     }
 
-                    const fileLink = item.gambar_surat ? `<a href="/ArsipKu/uploads/arsip_inactive/${item.gambar_surat}" target="_blank" class="btn btn-primary btn-sm"><i class="fas fa-file-alt"></i> Lihat</a>` : 'Tidak Ada File';
+                    const fileLink = item.gambar_surat ? `<a href="/ArsipKu/uploads/arsip_inactive/${item.gambar_surat}" target="_blank"><i class="fas fa-file-alt"></i> Lihat File</a>` : 'Tidak Ada File';
                     const lamaSurat = item.tahun_dibuat ? (new Date().getFullYear() - item.tahun_dibuat) : '-';
 
                     tbody.innerHTML += `
@@ -1152,32 +1105,20 @@ class HomeManager {
                             <td>${item.tahun_dibuat}</td>
                             <td>${lamaSurat} tahun</td>
                             <td>
-                                <button class="btn btn-primary btn-sm" onclick="openDocument('${item.id}', 'arsip-inactive')"><i class="fas fa-eye"></i> Lihat</button>
+                                <button class="btn btn-primary btn-sm" onclick="window.home.viewDocument('${item.id}', 'arsip_inactive')"><i class="fas fa-eye"></i></button>
                             </td>
                         </tr>
                     `;
                 });
             })
             .catch(err => {
-                tbody.innerHTML = `<tr><td colspan="8" class="empty-state">Gagal memuat data arsip inactive: ${err.message}. Pastikan file PHP ada dan tidak ada error server.</td></tr>`;
-                console.error("Fetch Error for Arsip Inactive:", err);
+                tbody.innerHTML = `<tr><td colspan="8" class="empty-state">Gagal memuat data arsip inactive: ${err.message}</td></tr>`;
+                console.error("Fetch Error:", err);
             });
     }
-
-    // Semua fungsi CRUD Agenda (showAddAgendaModal, closeModal, editAgenda, deleteAgenda,
-    // deleteAgendaFromHistory, refreshAgendaData, viewDetails, archiveAgenda,
-    // archiveCompletedAgenda, deleteOldAgenda, handleAgendaFormSubmit)
-    // dihapus dari sini karena ini adalah mode view only.
-
-    // Jika Anda ingin menjaga fungsi-fungsi ini tetapi membuatnya tidak aktif,
-    // Anda bisa mengosongkan isinya atau menampilkan notifikasi bahwa fitur tidak tersedia.
 }
 
-// ============================================
-// FUNGSI GLOBAL UNTUK KOMPATIBILITAS HTML
-// (Arahkan ke instance HomeManager)
-// ============================================
-
+// Global functions for compatibility
 window.showSection = function(event, sectionId) {
     if (window.home) {
         const targetElement = event.currentTarget;
@@ -1190,11 +1131,8 @@ window.showSection = function(event, sectionId) {
 };
 
 window.triggerFileUpload = function() {
-    console.log('Global triggerFileUpload called');
     if (window.home) {
         window.home.triggerFileUpload();
-    } else {
-        console.error('Home not initialized');
     }
 };
 
@@ -1203,234 +1141,6 @@ window.handleFileSelect = function(event) {
         window.home.handleFileSelect(event);
     }
 };
-
-window.handleDragOver = function(event) {
-    if (window.home) {
-        window.home.handleDragOver(event);
-    }
-};
-
-window.handleDragLeave = function(event) {
-    if (window.home) {
-        window.home.handleDragLeave(event);
-    }
-};
-
-window.handleDrop = function(event) {
-    if (window.home) {
-        window.home.handleDrop(event);
-    }
-};
-
-window.showDocumentOptions = function(event, documentId) {
-    event.stopPropagation();
-    console.log('Document options for:', documentId);
-
-    const existingMenu = document.querySelector('.context-menu');
-    if (existingMenu) {
-        existingMenu.remove();
-    }
-
-    const contextMenu = document.createElement('div');
-    contextMenu.className = 'context-menu';
-    contextMenu.innerHTML = `
-        <div class="context-menu-item" onclick="window.home.downloadDocument('${documentId}')">
-            <span>📥</span> Download
-        </div>
-        <div class="context-menu-item" onclick="window.home.shareDocument('${documentId}')">
-            <span>🔗</span> Share
-        </div>
-        <div class="context-menu-item" onclick="window.home.renameDocument('${documentId}')">
-            <span>✏️</span> Rename
-        </div>
-        <div class="context-menu-divider"></div>
-        <div class="context-menu-item context-menu-danger" onclick="window.home.deleteDocument('${documentId}')">
-            <span>🗑️</span> Delete
-        </div>
-    `;
-
-    const rect = event.target.getBoundingClientRect();
-    contextMenu.style.cssText = `
-        position: fixed;
-        top: ${rect.bottom + 5}px;
-        left: ${rect.left}px;
-        z-index: 10000;
-        background: #2f3032;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 8px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-        padding: 8px 0;
-        min-width: 180px;
-    `;
-
-    if (!document.getElementById('context-menu-styles')) {
-        const style = document.createElement('style');
-        style.id = 'context-menu-styles';
-        style.textContent = `
-            .context-menu-item {
-                padding: 10px 16px;
-                cursor: pointer;
-                display: flex;
-                align-items: center;
-                gap: 12px;
-                transition: background-color 0.2s;
-                color: #e8eaed;
-                font-size: 14px;
-            }
-            .context-menu-item:hover {
-                background-color: rgba(255, 255, 255, 0.08);
-            }
-            .context-menu-danger {
-                color: #f44336;
-            }
-            .context-menu-danger:hover {
-                background-color: rgba(244, 67, 54, 0.1);
-            }
-            .context-menu-divider {
-                height: 1px;
-                background-color: rgba(255, 255, 255, 0.1);
-                margin: 4px 0;
-            }
-        `;
-        document.head.appendChild(style);
-    }
-
-    document.body.appendChild(contextMenu);
-
-    const closeMenu = (e) => {
-        if (!contextMenu.contains(e.target)) {
-            contextMenu.remove();
-            document.removeEventListener('click', closeMenu);
-        }
-    };
-
-    setTimeout(() => {
-        document.addEventListener('click', closeMenu);
-    }, 10);
-};
-
-// Show Recent Document Options
-window.showRecentDocumentOptions = function(event, documentId, category) {
-    event.stopPropagation();
-    console.log('Recent document options for:', documentId, category);
-
-    const existingMenu = document.querySelector('.context-menu');
-    if (existingMenu) {
-        existingMenu.remove();
-    }
-
-    const contextMenu = document.createElement('div');
-    contextMenu.className = 'context-menu';
-    
-    // Check if document is downloadable
-    const isDownloadable = category !== 'agenda';
-    
-    contextMenu.innerHTML = `
-        <div class="context-menu-item" onclick="openRecentDocument('${documentId}', '${category}')">
-            <span>👁️</span> Lihat Detail
-        </div>
-        ${isDownloadable ? `
-            <div class="context-menu-item" onclick="window.downloadDocument('${documentId}', '${category}')">
-                <span>📥</span> Download File
-            </div>
-        ` : ''}
-        <div class="context-menu-item" onclick="navigateToCategory('${category}')">
-            <span>📂</span> Buka Kategori
-        </div>
-        <div class="context-menu-divider"></div>
-        <div class="context-menu-item" onclick="refreshRecentDocuments()">
-            <span>🔄</span> Refresh
-        </div>
-    `;
-
-    const rect = event.target.getBoundingClientRect();
-    contextMenu.style.cssText = `
-        position: fixed;
-        top: ${rect.bottom + 5}px;
-        left: ${rect.left}px;
-        z-index: 10000;
-        background: #2f3032;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 8px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-        padding: 8px 0;
-        min-width: 180px;
-    `;
-
-    document.body.appendChild(contextMenu);
-
-    const closeMenu = (e) => {
-        if (!contextMenu.contains(e.target)) {
-            contextMenu.remove();
-            document.removeEventListener('click', closeMenu);
-        }
-    };
-
-    setTimeout(() => {
-        document.addEventListener('click', closeMenu);
-    }, 10);
-};
-
-window.openRecentDocument = function(documentId, category) {
-    if (window.home) {
-        // Find the document in the recent documents and open it
-        const docCard = document.querySelector(`[data-id="${documentId}"][data-category="${category}"]`);
-        if (docCard) {
-            docCard.click();
-        }
-    }
-    // Close context menu
-    document.querySelector('.context-menu')?.remove();
-};
-
-window.navigateToCategory = function(category) {
-    if (window.home) {
-        window.home.setActiveSection(category);
-    }
-    // Close context menu
-    document.querySelector('.context-menu')?.remove();
-};
-
-window.refreshRecentDocuments = function() {
-    if (window.home) {
-        window.home.loadRecentDocuments();
-        window.home.showNotification('Dokumen terbaru diperbarui', 'success');
-    }
-    // Close context menu
-    document.querySelector('.context-menu')?.remove();
-};
-
-// Global download function
-window.downloadDocument = function(documentId, category, event) {
-    if (event) {
-        event.stopPropagation();
-        event.preventDefault();
-    }
-    
-    if (window.home) {
-        window.home.downloadDocument(documentId, category);
-    }
-    
-    // Close context menu if exists
-    document.querySelector('.context-menu')?.remove();
-};
-
-window.shareDocument = function(documentId) { if (window.home) { window.home.shareDocument(documentId); } };
-window.renameDocument = function(documentId) { if (window.home) { window.home.renameDocument(documentId); } };
-window.deleteDocument = function(documentId) { if (window.home) { window.home.deleteDocument(documentId); } };
-// Modified openDocument to handle different types
-window.openDocument = function(documentId, type = 'default') {
-    if (window.home) {
-        // You might want to differentiate how documents are opened based on type
-        console.log(`Opening document ID: ${documentId} of type: ${type}`);
-        // For now, just show a notification.
-        window.home.showNotification(`Membuka dokumen ${type} ID: ${documentId}...`, 'info');
-        // If it's a file link, you can redirect or open in a new tab
-        // For example, if you have the file path available:
-        // window.open(`/ArsipKu/uploads/${type}/${documentId_or_filename}`, '_blank');
-    }
-};
-
 
 // Initialize home
 document.addEventListener('DOMContentLoaded', () => {
