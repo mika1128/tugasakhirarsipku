@@ -32,7 +32,7 @@ class HomeManager {
         this.bindEvents();
         this.initializeDefaultState();
         this.updateStats();
-        this.loadRecentDocuments(); // Load recent documents on init
+        this.loadRecentDocuments();
         console.log('Home initialized successfully');
     }
 
@@ -243,10 +243,7 @@ class HomeManager {
      */
     loadRecentDocuments() {
         const documentGrid = document.getElementById('documentGrid');
-        if (!documentGrid) {
-            console.error('Document grid not found');
-            return;
-        }
+        if (!documentGrid) return;
 
         // Show loading state
         documentGrid.innerHTML = '<div class="loading-state"><i class="fas fa-spinner fa-spin"></i><br>Memuat dokumen terbaru...</div>';
@@ -259,17 +256,31 @@ class HomeManager {
                 return res.json();
             })
             .then(response => {
-                console.log('Recent documents response:', response);
-                
                 if (response.status === 'error') {
-                    documentGrid.innerHTML = `<div class="empty-state"><i class="fas fa-exclamation-circle"></i><br>Error: ${response.message}</div>`;
+                    documentGrid.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-exclamation-circle"></i><br>
+                            Error: ${response.message}
+                            <small>Klik tombol di bawah untuk mencoba lagi</small>
+                            <br><br>
+                            <button class="btn btn-primary" onclick="window.home.loadRecentDocuments()">
+                                <i class="fas fa-redo"></i> Coba Lagi
+                            </button>
+                        </div>
+                    `;
                     console.error("Server Error:", response.error);
                     return;
                 }
 
                 const documents = response.data;
                 if (!documents || documents.length === 0) {
-                    documentGrid.innerHTML = '<div class="empty-state"><i class="fas fa-folder-open"></i><br>Belum ada dokumen terbaru<br><small>Dokumen akan muncul setelah Anda menambahkan data</small></div>';
+                    documentGrid.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-folder-open"></i><br>
+                            Belum ada dokumen terbaru
+                            <small>Upload dokumen pertama Anda untuk melihatnya di sini</small>
+                        </div>
+                    `;
                     return;
                 }
 
@@ -283,20 +294,20 @@ class HomeManager {
                 });
 
                 console.log(`Loaded ${documents.length} recent documents`);
-                this.showNotification(`Berhasil memuat ${documents.length} dokumen terbaru`, 'success');
             })
             .catch(err => {
-                console.error("Fetch Error for Recent Documents:", err);
                 documentGrid.innerHTML = `
                     <div class="empty-state">
                         <i class="fas fa-exclamation-triangle"></i><br>
-                        Gagal memuat dokumen terbaru<br>
-                        <small>Error: ${err.message}</small><br>
-                        <button class="btn btn-primary" onclick="window.home.loadRecentDocuments()" style="margin-top: 10px;">
-                            <i class="fas fa-refresh"></i> Coba Lagi
+                        Gagal memuat dokumen terbaru: ${err.message}
+                        <small>Periksa koneksi internet Anda dan coba lagi</small>
+                        <br><br>
+                        <button class="btn btn-primary" onclick="window.home.loadRecentDocuments()">
+                            <i class="fas fa-redo"></i> Coba Lagi
                         </button>
                     </div>
                 `;
+                console.error("Fetch Error for Recent Documents:", err);
             });
     }
 
@@ -322,6 +333,9 @@ class HomeManager {
             thumbnailContent = `<i class="${doc.icon}" style="color: ${doc.color}; font-size: 48px;"></i>`;
         }
 
+        // Determine if file is downloadable
+        const isDownloadable = doc.file_url && doc.file_name && doc.category !== 'agenda';
+
         docCard.innerHTML = `
             <div class="doc-thumbnail">
                 ${thumbnailContent}
@@ -338,20 +352,68 @@ class HomeManager {
                     </span>
                     <span class="status-badge ${doc.status_class}">${doc.status}</span>
                 </div>
+                ${isDownloadable ? `
+                    <div class="doc-actions" style="margin-top: 10px;">
+                        <button class="btn btn-primary btn-sm" onclick="window.downloadDocument('${doc.id}', '${doc.category}', event)" title="Download ${this.getFileTypeLabel(doc.file_name)}">
+                            <i class="fas fa-download"></i> Download ${this.getFileTypeLabel(doc.file_name)}
+                        </button>
+                    </div>
+                ` : ''}
             </div>
             <button class="doc-options" onclick="showRecentDocumentOptions(event, '${doc.id}', '${doc.category}')">
                 <i class="fas fa-ellipsis-v"></i>
             </button>
         `;
 
-        // Add click handler to open document
+        // Add click handler to open document (but not when clicking download button)
         docCard.addEventListener('click', (e) => {
-            if (!e.target.closest('.doc-options')) {
+            if (!e.target.closest('.doc-options') && !e.target.closest('.doc-actions')) {
                 this.openRecentDocument(doc);
             }
         });
 
         return docCard;
+    }
+
+    /**
+     * Get File Type Label for Download Button
+     */
+    getFileTypeLabel(fileName) {
+        if (!fileName) return 'File';
+        
+        const extension = fileName.split('.').pop().toLowerCase();
+        const typeLabels = {
+            // Microsoft Office
+            'doc': 'Word',
+            'docx': 'Word',
+            'xls': 'Excel',
+            'xlsx': 'Excel',
+            'ppt': 'PowerPoint',
+            'pptx': 'PowerPoint',
+            
+            // PDF
+            'pdf': 'PDF',
+            
+            // Images
+            'jpg': 'Gambar',
+            'jpeg': 'Gambar',
+            'png': 'Gambar',
+            'gif': 'Gambar',
+            'bmp': 'Gambar',
+            'webp': 'Gambar',
+            
+            // Text
+            'txt': 'Text',
+            'rtf': 'RTF',
+            'csv': 'CSV',
+            
+            // Archives
+            'zip': 'ZIP',
+            'rar': 'RAR',
+            '7z': '7Z'
+        };
+
+        return typeLabels[extension] || 'File';
     }
 
     /**
@@ -384,6 +446,32 @@ class HomeManager {
         } else {
             this.showNotification(`Detail ${doc.title} akan segera tersedia`, 'info');
         }
+    }
+
+    /**
+     * Download Document
+     */
+    downloadDocument(documentId, category) {
+        console.log('Downloading document:', documentId, category);
+        
+        // Show loading notification
+        this.showNotification('Mempersiapkan download...', 'info');
+        
+        // Create download URL
+        const downloadUrl = `/ArsipKu/pages/download_document.php?id=${documentId}&category=${category}`;
+        
+        // Create temporary link and trigger download
+        const link = document.createElement('a');
+        link.href = downloadUrl;
+        link.style.display = 'none';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        // Show success notification
+        setTimeout(() => {
+            this.showNotification('Download dimulai...', 'success');
+        }, 500);
     }
 
     /**
@@ -678,7 +766,7 @@ class HomeManager {
         notification.className = `notification notification-${type}`;
         notification.textContent = message;
 
-        // Add styles if not exists
+        // Add styles if not exists (ini seharusnya ada di CSS, tapi untuk demo cepat bisa di sini)
         if (!document.getElementById('notification-styles')) {
             const style = document.createElement('style');
             style.id = 'notification-styles';
@@ -792,11 +880,8 @@ class HomeManager {
         // Implement document opening logic here
     }
 
-    // Load data methods for different sections
     loadAgendaData() {
         const tbody = document.querySelector('#agenda-table tbody');
-        if (!tbody) return;
-        
         tbody.innerHTML = '<tr><td colspan="9" class="loading"><i class="fas fa-spinner fa-spin"></i><br>Memuat data agenda...</td></tr>';
 
         fetch('/ArsipKu/pages/get_agenda.php')
@@ -846,20 +931,19 @@ class HomeManager {
                             <td>${agenda.location || '-'}</td>
                             <td><span class="status-badge ${statusClass}">${agenda.status}</span></td>
                             <td><span class="priority-badge ${priorityClass}">${agenda.priority}</span></td>
-                        </tr>
+                            </tr>
                     `;
                 });
             })
             .catch(err => {
-                tbody.innerHTML = `<tr><td colspan="9" class="empty-state">Gagal memuat data agenda: ${err.message}</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="9" class="empty-state">Gagal memuat data agenda: ${err.message}. Pastikan file PHP ada dan tidak ada error server.</td></tr>`;
                 console.error("Fetch Error for Agenda:", err);
             });
     }
 
+
     loadHistoryData() {
         const tbody = document.querySelector('#history-table tbody');
-        if (!tbody) return;
-        
         tbody.innerHTML = '<tr><td colspan="5" class="loading"><i class="fas fa-spinner fa-spin"></i><br>Memuat riwayat agenda...</td></tr>';
 
         fetch('/ArsipKu/pages/get_history.php')
@@ -900,20 +984,18 @@ class HomeManager {
                             <td>${agenda.title}</td>
                             <td>${agenda.end_date || agenda.start_date}</td>
                             <td><span class="status-badge ${statusClass}">${agenda.status}</span></td>
-                        </tr>
+                            </tr>
                     `;
                 });
             })
             .catch(err => {
-                tbody.innerHTML = `<tr><td colspan="5" class="empty-state">Gagal memuat riwayat data: ${err.message}</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="5" class="empty-state">Gagal memuat riwayat data: ${err.message}. Pastikan file PHP ada dan tidak ada error server.</td></tr>`;
                 console.error("Fetch Error for History:", err);
             });
     }
 
     loadKeluargaData() {
         const tbody = document.querySelector('#keluarga-table tbody');
-        if (!tbody) return;
-        
         tbody.innerHTML = '<tr><td colspan="7" class="loading"><i class="fas fa-spinner fa-spin"></i><br>Memuat data dokumen keluarga...</td></tr>';
 
         fetch('/ArsipKu/pages/get_keluarga_dokumen.php')
@@ -957,15 +1039,13 @@ class HomeManager {
                 });
             })
             .catch(err => {
-                tbody.innerHTML = `<tr><td colspan="7" class="empty-state">Gagal memuat data dokumen keluarga: ${err.message}</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="7" class="empty-state">Gagal memuat data dokumen keluarga: ${err.message}. Pastikan file PHP ada dan tidak ada error server.</td></tr>`;
                 console.error("Fetch Error for Keluarga Dokumen:", err);
             });
     }
 
     loadArsipVitalData() {
         const tbody = document.querySelector('#arsip-vital-table tbody');
-        if (!tbody) return;
-        
         tbody.innerHTML = '<tr><td colspan="8" class="loading"><i class="fas fa-spinner fa-spin"></i><br>Memuat data arsip vital...</td></tr>';
 
         fetch('/ArsipKu/pages/get_arsip_vital.php')
@@ -996,7 +1076,7 @@ class HomeManager {
                     } else if (item.status === 'inaktif') {
                         statusClass = 'status-inactive';
                     } else if (item.status === 'rusak') {
-                        statusClass = 'status-inactive';
+                        statusClass = 'status-inactive'; // Menggunakan inactive untuk rusak
                     }
 
                     const fileLink = item.gambar_surat ? `<a href="/ArsipKu/uploads/arsip_vital/${item.gambar_surat}" target="_blank" class="btn btn-primary btn-sm"><i class="fas fa-file-alt"></i> Lihat</a>` : 'Tidak Ada File';
@@ -1019,15 +1099,13 @@ class HomeManager {
                 });
             })
             .catch(err => {
-                tbody.innerHTML = `<tr><td colspan="8" class="empty-state">Gagal memuat data arsip vital: ${err.message}</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="8" class="empty-state">Gagal memuat data arsip vital: ${err.message}. Pastikan file PHP ada dan tidak ada error server.</td></tr>`;
                 console.error("Fetch Error for Arsip Vital:", err);
             });
     }
 
     loadArsipInactiveData() {
         const tbody = document.querySelector('#arsip-inactive-table tbody');
-        if (!tbody) return;
-        
         tbody.innerHTML = '<tr><td colspan="8" class="loading"><i class="fas fa-spinner fa-spin"></i><br>Memuat data arsip inactive...</td></tr>';
 
         fetch('/ArsipKu/pages/get_arsip_inactive.php')
@@ -1058,7 +1136,7 @@ class HomeManager {
                     } else if (item.status === 'inaktif') {
                         statusClass = 'status-inactive';
                     } else if (item.status === 'rusak') {
-                        statusClass = 'status-inactive';
+                        statusClass = 'status-inactive'; // Menggunakan inactive untuk rusak
                     }
 
                     const fileLink = item.gambar_surat ? `<a href="/ArsipKu/uploads/arsip_inactive/${item.gambar_surat}" target="_blank" class="btn btn-primary btn-sm"><i class="fas fa-file-alt"></i> Lihat</a>` : 'Tidak Ada File';
@@ -1081,13 +1159,25 @@ class HomeManager {
                 });
             })
             .catch(err => {
-                tbody.innerHTML = `<tr><td colspan="8" class="empty-state">Gagal memuat data arsip inactive: ${err.message}</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="8" class="empty-state">Gagal memuat data arsip inactive: ${err.message}. Pastikan file PHP ada dan tidak ada error server.</td></tr>`;
                 console.error("Fetch Error for Arsip Inactive:", err);
             });
     }
+
+    // Semua fungsi CRUD Agenda (showAddAgendaModal, closeModal, editAgenda, deleteAgenda,
+    // deleteAgendaFromHistory, refreshAgendaData, viewDetails, archiveAgenda,
+    // archiveCompletedAgenda, deleteOldAgenda, handleAgendaFormSubmit)
+    // dihapus dari sini karena ini adalah mode view only.
+
+    // Jika Anda ingin menjaga fungsi-fungsi ini tetapi membuatnya tidak aktif,
+    // Anda bisa mengosongkan isinya atau menampilkan notifikasi bahwa fitur tidak tersedia.
 }
 
-// Global functions for HTML compatibility
+// ============================================
+// FUNGSI GLOBAL UNTUK KOMPATIBILITAS HTML
+// (Arahkan ke instance HomeManager)
+// ============================================
+
 window.showSection = function(event, sectionId) {
     if (window.home) {
         const targetElement = event.currentTarget;
@@ -1219,7 +1309,7 @@ window.showDocumentOptions = function(event, documentId) {
     }, 10);
 };
 
-// Recent document options
+// Show Recent Document Options
 window.showRecentDocumentOptions = function(event, documentId, category) {
     event.stopPropagation();
     console.log('Recent document options for:', documentId, category);
@@ -1231,10 +1321,19 @@ window.showRecentDocumentOptions = function(event, documentId, category) {
 
     const contextMenu = document.createElement('div');
     contextMenu.className = 'context-menu';
+    
+    // Check if document is downloadable
+    const isDownloadable = category !== 'agenda';
+    
     contextMenu.innerHTML = `
         <div class="context-menu-item" onclick="openRecentDocument('${documentId}', '${category}')">
             <span>👁️</span> Lihat Detail
         </div>
+        ${isDownloadable ? `
+            <div class="context-menu-item" onclick="window.downloadDocument('${documentId}', '${category}')">
+                <span>📥</span> Download File
+            </div>
+        ` : ''}
         <div class="context-menu-item" onclick="navigateToCategory('${category}')">
             <span>📂</span> Buka Kategori
         </div>
@@ -1274,11 +1373,13 @@ window.showRecentDocumentOptions = function(event, documentId, category) {
 
 window.openRecentDocument = function(documentId, category) {
     if (window.home) {
+        // Find the document in the recent documents and open it
         const docCard = document.querySelector(`[data-id="${documentId}"][data-category="${category}"]`);
         if (docCard) {
             docCard.click();
         }
     }
+    // Close context menu
     document.querySelector('.context-menu')?.remove();
 };
 
@@ -1286,6 +1387,7 @@ window.navigateToCategory = function(category) {
     if (window.home) {
         window.home.setActiveSection(category);
     }
+    // Close context menu
     document.querySelector('.context-menu')?.remove();
 };
 
@@ -1294,39 +1396,41 @@ window.refreshRecentDocuments = function() {
         window.home.loadRecentDocuments();
         window.home.showNotification('Dokumen terbaru diperbarui', 'success');
     }
+    // Close context menu
     document.querySelector('.context-menu')?.remove();
 };
 
-window.downloadDocument = function(documentId) { 
-    if (window.home) { 
-        window.home.downloadDocument(documentId); 
-    } 
+// Global download function
+window.downloadDocument = function(documentId, category, event) {
+    if (event) {
+        event.stopPropagation();
+        event.preventDefault();
+    }
+    
+    if (window.home) {
+        window.home.downloadDocument(documentId, category);
+    }
+    
+    // Close context menu if exists
+    document.querySelector('.context-menu')?.remove();
 };
 
-window.shareDocument = function(documentId) { 
-    if (window.home) { 
-        window.home.shareDocument(documentId); 
-    } 
-};
-
-window.renameDocument = function(documentId) { 
-    if (window.home) { 
-        window.home.renameDocument(documentId); 
-    } 
-};
-
-window.deleteDocument = function(documentId) { 
-    if (window.home) { 
-        window.home.deleteDocument(documentId); 
-    } 
-};
-
+window.shareDocument = function(documentId) { if (window.home) { window.home.shareDocument(documentId); } };
+window.renameDocument = function(documentId) { if (window.home) { window.home.renameDocument(documentId); } };
+window.deleteDocument = function(documentId) { if (window.home) { window.home.deleteDocument(documentId); } };
+// Modified openDocument to handle different types
 window.openDocument = function(documentId, type = 'default') {
     if (window.home) {
+        // You might want to differentiate how documents are opened based on type
         console.log(`Opening document ID: ${documentId} of type: ${type}`);
+        // For now, just show a notification.
         window.home.showNotification(`Membuka dokumen ${type} ID: ${documentId}...`, 'info');
+        // If it's a file link, you can redirect or open in a new tab
+        // For example, if you have the file path available:
+        // window.open(`/ArsipKu/uploads/${type}/${documentId_or_filename}`, '_blank');
     }
 };
+
 
 // Initialize home
 document.addEventListener('DOMContentLoaded', () => {

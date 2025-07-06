@@ -595,6 +595,20 @@ table tr:hover {
     gap: 4px;
 }
 
+/* NEW: Document Actions */
+.doc-actions {
+    margin-top: 10px;
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.doc-actions .btn {
+    flex: 1;
+    min-width: 120px;
+    justify-content: center;
+}
+
 /* Loading and Empty States */
 .loading-state, .empty-state {
     text-align: center;
