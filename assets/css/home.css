@@ -136,6 +136,11 @@ table tr:hover {
     color: #333; /* Teks gelap agar kontras */
 }
 
+.status-info {
+    background: #2196F3; /* Biru */
+    color: white;
+}
+
 /* Priority badges */
 .priority-badge {
     padding: 4px 10px;
@@ -610,6 +615,13 @@ table tr:hover {
 
 .empty-state {
     color: #9aa0a6;
+}
+
+.empty-state small {
+    display: block;
+    margin-top: 8px;
+    font-size: 12px;
+    opacity: 0.7;
 }
 
 /* Upload Area */
