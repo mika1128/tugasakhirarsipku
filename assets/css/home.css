@@ -720,6 +720,7 @@ table tr:hover {
     padding: 8px 12px;
     border-radius: 6px;
     margin-top: 8px;
+    white-space: pre-line;
 }
 
 .notification-actions {

@@ -1,6 +1,6 @@
 <?php
 /**
- * Get Notifications
+ * Get Notifications with Enhanced Details
  * File: pages/get_notifications.php
  */
 
@@ -46,7 +46,7 @@ try {
                 'id' => 'keluarga_' . $doc['id'],
                 'title' => 'Dokumen Keluarga Kadaluarsa',
                 'message' => "Dokumen '{$doc['nama_dokumen']}' telah kadaluarsa atau perlu diperbaharui.",
-                'details' => "Nama Admin: Administrator\nJenis Surat: Dokumen Keluarga\nKelompok Surat: Keluarga\nTanggal Dibuat: {$doc['tanggal_dibuat']}\nStatus: {$doc['status']}",
+                'details' => "Nama Admin: Administrator\nJenis Surat: Dokumen Keluarga\nKelompok Surat: Keluarga\nTanggal Dibuat: {$doc['tanggal_dibuat']}\nStatus: {$doc['status']}\nWaktu Notifikasi: " . date('Y-m-d H:i:s'),
                 'priority' => 'high',
                 'icon' => 'fas fa-exclamation-triangle',
                 'created_at' => date('Y-m-d H:i:s'),
@@ -84,7 +84,7 @@ try {
                 'id' => 'vital_' . $doc['id'],
                 'title' => 'Arsip Vital Sudah Lama',
                 'message' => "Surat No. {$doc['nomor_surat']} sudah berusia {$age} tahun dan mungkin perlu review.",
-                'details' => "Nama Admin: Administrator\nJenis Surat: Arsip Vital\nKelompok Surat: Vital\nNomor Surat: {$doc['nomor_surat']}\nTahun Dibuat: {$doc['tahun_dibuat']}\nUsia: {$age} tahun\nStatus: {$doc['status']}",
+                'details' => "Nama Admin: Administrator\nJenis Surat: Arsip Vital\nKelompok Surat: Vital\nNomor Surat: {$doc['nomor_surat']}\nTahun Dibuat: {$doc['tahun_dibuat']}\nUsia: {$age} tahun\nStatus: {$doc['status']}\nWaktu Notifikasi: " . date('Y-m-d H:i:s'),
                 'priority' => 'medium',
                 'icon' => 'fas fa-clock',
                 'created_at' => date('Y-m-d H:i:s'),
@@ -121,7 +121,7 @@ try {
                 'id' => 'agenda_' . $agenda['id'],
                 'title' => 'Agenda Terlambat',
                 'message' => "Agenda '{$agenda['title']}' sudah melewati batas waktu {$daysPast} hari yang lalu.",
-                'details' => "Nama Admin: {$agenda['admin_name']}\nJenis: Agenda\nKelompok: Jadwal\nJudul: {$agenda['title']}\nTanggal Berakhir: {$agenda['end_date']}\nStatus: {$agenda['status']}\nPrioritas: {$agenda['priority']}",
+                'details' => "Nama Admin: " . ($agenda['admin_name'] ?? 'Administrator') . "\nJenis: Agenda\nKelompok: Jadwal\nJudul: {$agenda['title']}\nTanggal Berakhir: {$agenda['end_date']}\nStatus: {$agenda['status']}\nPrioritas: {$agenda['priority']}\nTerlambat: {$daysPast} hari\nWaktu Notifikasi: " . date('Y-m-d H:i:s'),
                 'priority' => $agenda['priority'] === 'high' ? 'high' : 'medium',
                 'icon' => 'fas fa-calendar-times',
                 'created_at' => date('Y-m-d H:i:s'),
@@ -154,7 +154,7 @@ try {
                 'id' => 'inactive_' . $doc['id'],
                 'title' => 'Arsip Rusak Ditemukan',
                 'message' => "Surat No. {$doc['nomor_surat']} dalam kondisi rusak dan perlu perhatian.",
-                'details' => "Nama Admin: Administrator\nJenis Surat: Arsip Inactive\nKelompok Surat: Inactive\nNomor Surat: {$doc['nomor_surat']}\nTahun Dibuat: {$doc['tahun_dibuat']}\nStatus: {$doc['status']}",
+                'details' => "Nama Admin: Administrator\nJenis Surat: Arsip Inactive\nKelompok Surat: Inactive\nNomor Surat: {$doc['nomor_surat']}\nTahun Dibuat: {$doc['tahun_dibuat']}\nStatus: {$doc['status']}\nKondisi: Rusak - Perlu Perbaikan\nWaktu Notifikasi: " . date('Y-m-d H:i:s'),
                 'priority' => 'high',
                 'icon' => 'fas fa-exclamation-circle',
                 'created_at' => date('Y-m-d H:i:s'),
@@ -165,12 +165,45 @@ try {
         error_log("Error checking inactive archives: " . $e->getMessage());
     }
     
-    // 5. Add some general system notifications
+    // 5. Check for documents that need renewal (created more than 1 year ago)
+    try {
+        $stmt = $conn->prepare("
+            SELECT 
+                id,
+                nama_dokumen,
+                tanggal_dibuat,
+                status
+            FROM keluarga_dokumen 
+            WHERE status = 'aktif' AND tanggal_dibuat < DATE_SUB(NOW(), INTERVAL 1 YEAR)
+            ORDER BY tanggal_dibuat ASC
+            LIMIT 3
+        ");
+        $stmt->execute();
+        $renewalDocs = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        foreach ($renewalDocs as $doc) {
+            $daysSinceCreated = floor((time() - strtotime($doc['tanggal_dibuat'])) / (60 * 60 * 24));
+            $notifications[] = [
+                'id' => 'renewal_' . $doc['id'],
+                'title' => 'Dokumen Perlu Diperbaharui',
+                'message' => "Dokumen '{$doc['nama_dokumen']}' sudah berusia {$daysSinceCreated} hari dan mungkin perlu diperbaharui.",
+                'details' => "Nama Admin: Administrator\nJenis Surat: Dokumen Keluarga\nKelompok Surat: Keluarga\nNama Dokumen: {$doc['nama_dokumen']}\nTanggal Dibuat: {$doc['tanggal_dibuat']}\nUsia Dokumen: {$daysSinceCreated} hari\nStatus: {$doc['status']}\nRekomendasi: Perlu Review\nWaktu Notifikasi: " . date('Y-m-d H:i:s'),
+                'priority' => 'medium',
+                'icon' => 'fas fa-sync-alt',
+                'created_at' => date('Y-m-d H:i:s'),
+                'action_url' => '/ArsipKu/home/home.php#keluarga'
+            ];
+        }
+    } catch (PDOException $e) {
+        error_log("Error checking renewal documents: " . $e->getMessage());
+    }
+    
+    // 6. Add system welcome notification
     $notifications[] = [
         'id' => 'system_welcome',
         'title' => 'Selamat Datang di ArsipKu',
         'message' => 'Sistem manajemen dokumen Anda siap digunakan. Pastikan untuk memeriksa dokumen secara berkala.',
-        'details' => "Nama Admin: Administrator\nJenis: Sistem\nKelompok: Informasi\nWaktu: " . date('Y-m-d H:i:s'),
+        'details' => "Nama Admin: Administrator\nJenis: Sistem\nKelompok: Informasi\nPesan: Sistem berjalan normal\nFitur Tersedia: Upload, Download, Pencarian, Notifikasi\nWaktu Login: " . date('Y-m-d H:i:s'),
         'priority' => 'low',
         'icon' => 'fas fa-info-circle',
         'created_at' => date('Y-m-d H:i:s'),
@@ -190,8 +223,8 @@ try {
         return $bPriority - $aPriority;
     });
     
-    // Limit to 10 most important notifications
-    $notifications = array_slice($notifications, 0, 10);
+    // Limit to 15 most important notifications
+    $notifications = array_slice($notifications, 0, 15);
     
     $response = [
         'status' => 'success',
