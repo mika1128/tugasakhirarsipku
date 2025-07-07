@@ -1189,8 +1189,3 @@ document.addEventListener('DOMContentLoaded', () => {
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = HomeManager;
 }
-                }
-            }
-            )
-    }
-}
