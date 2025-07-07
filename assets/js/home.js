@@ -57,6 +57,7 @@ class HomeManager {
         const defaultSection = 'disarankan-content';
         this.setActiveSection(defaultSection);
         this.loadRecentDocuments();
+        this.loadAllDocuments(); // Load all documents for search functionality
     }
 
     /**
@@ -223,6 +224,8 @@ class HomeManager {
                 this.loadArsipVitalData();
             } else if (sectionId === 'arsip-inactive') {
                 this.loadArsipInactiveData();
+            } else if (sectionId === 'dokumen-main') {
+                this.loadAllDocuments();
             }
         }
     }
@@ -247,6 +250,31 @@ class HomeManager {
             })
             .catch(error => {
                 console.error('Error loading recent documents:', error);
+                documentGrid.innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><h3>Gagal memuat dokumen</h3><p>Terjadi kesalahan saat memuat data</p></div>';
+            });
+    }
+
+    /**
+     * Load all documents for the main document section
+     */
+    loadAllDocuments() {
+        const documentGrid = document.getElementById('documentGridDokumenSaya');
+        if (!documentGrid) return;
+
+        documentGrid.innerHTML = '<div class="loading-state"><i class="fas fa-spinner fa-spin"></i><br>Memuat semua dokumen...</div>';
+
+        fetch('/ArsipKu/pages/get_all_documents.php')
+            .then(res => res.json())
+            .then(response => {
+                if (response.status === 'success' && response.data) {
+                    this.renderDocuments(response.data, documentGrid);
+                    this.updateStats();
+                } else {
+                    documentGrid.innerHTML = '<div class="empty-state"><i class="fas fa-folder-open"></i><h3>Belum ada dokumen</h3><p>Mulai dengan mengunggah dokumen pertama Anda</p></div>';
+                }
+            })
+            .catch(error => {
+                console.error('Error loading all documents:', error);
                 documentGrid.innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><h3>Gagal memuat dokumen</h3><p>Terjadi kesalahan saat memuat data</p></div>';
             });
     }
