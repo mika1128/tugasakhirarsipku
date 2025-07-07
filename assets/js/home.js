@@ -1,3 +1,22 @@
+/**
+ * Handles image loading errors by replacing the broken image with a custom placeholder.
+ * @param {HTMLElement} element - The image element that failed to load.
+ * @param {string} iconClass - The Font Awesome icon class for the placeholder.
+ * @param {string} categoryName - The name of the document category.
+ * @param {string} color - The base color for the placeholder gradient.
+ */
+function handleImageError(element, iconClass, categoryName, color) {
+    const placeholder = document.createElement('div');
+    placeholder.style.cssText = `display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; height: 100%; background: linear-gradient(135deg, ${color || '#4A5568'}, #2D3748); color: white; text-align: center;`;
+    placeholder.innerHTML = `<i class="fas ${iconClass}" style="font-size: 40px; margin-bottom: 10px; opacity: 0.8;"></i><span style="font-weight: 500; font-size: 14px;">${categoryName}</span>`;
+    
+    // Replace the broken image element with the new placeholder
+    if (element.parentNode) {
+        element.parentNode.replaceChild(placeholder, element);
+    }
+}
+
+
 class HomeManager {
     constructor() {
         this.sidebar = null;
@@ -396,9 +415,37 @@ class HomeManager {
         docCard.dataset.id = doc.id;
         docCard.dataset.category = doc.category;
 
+        const getIconForCategory = (category) => {
+            switch (category) {
+                case 'keluarga': return 'fa-users';
+                case 'agenda': return 'fa-calendar-alt';
+                case 'arsip_vital': return 'fa-file-invoice';
+                case 'arsip_inactive': return 'fa-folder-minus';
+                default: return 'fa-file-alt';
+            }
+        };
+
+        const iconClass = getIconForCategory(doc.category);
+        const categoryName = doc.category.replace('_', ' ').toUpperCase();
+        const color = doc.color || '#4A5568';
+
+        // Placeholder with gradient, icon, and text
+        const placeholderHTML = `
+            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; height: 100%; background: linear-gradient(135deg, ${color}, #2D3748); color: white; text-align: center;">
+                <i class="fas ${iconClass}" style="font-size: 40px; margin-bottom: 10px; opacity: 0.8;"></i>
+                <span style="font-weight: 500; font-size: 14px;">${categoryName}</span>
+            </div>
+        `;
+
+        const isImageUrl = doc.thumbnail_url && (doc.thumbnail_url.startsWith('http') || doc.thumbnail_url.startsWith('/'));
+        
+        const thumbnailContent = isImageUrl
+            ? `<img src="${doc.thumbnail_url}" alt="${doc.title}" onerror="handleImageError(this, '${iconClass}', '${categoryName}', '${color}')">`
+            : placeholderHTML;
+
         docCard.innerHTML = `
             <div class="doc-thumbnail">
-                <img src="${doc.thumbnail_url}" alt="${doc.title}" onerror="this.src='https://via.placeholder.com/200x120/3c4043/9aa0a6?text=${encodeURIComponent(doc.category.toUpperCase())}'">
+                ${thumbnailContent}
                 <div class="doc-category-badge" style="background: ${doc.color}">${doc.category.toUpperCase()}</div>
             </div>
             <div class="doc-info">
@@ -1001,7 +1048,7 @@ class HomeManager {
             .then(res => res.json())
             .then(response => {
                 if (response.status === 'error') {
-                    tbody.innerHTML = `<tr><td colspan="7" class="empty-state">Error: ${response.message}</td></tr>';
+                    tbody.innerHTML = `<tr><td colspan="7" class="empty-state">Error: ${response.message}</td></tr>`;
                     return;
                 }
 
