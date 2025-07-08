@@ -104,7 +104,6 @@ $userAvatarPath = 'https://via.placeholder.com/36/4285F4/FFFFFF?text=' . strtoup
                         <div class="stat-label">Pengguna Aktif</div>
                     </div>
                 </div>
-                <p>Daftar dokumen lengkap akan ditampilkan di sini setelah Anda mengunggah.</p>
                  <div class="document-grid" id="documentGridDokumenSaya">
                 </div>
             </section>

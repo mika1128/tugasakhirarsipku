@@ -521,7 +521,7 @@ try {
 
             <section id="admin-chat" class="tab-content">
                 <div class="card">
-                    <h2><i class="fas fa-comments"></i> Kelola Chat dengan Masyarakat</h2>`
+                    <h2><i class="fas fa-comments"></i> Kelola Chat dengan Masyarakat</h2
 
                     <div style="margin-bottom: 20px;">
                         <button class="btn btn-primary" onclick="loadChatMessages()">
