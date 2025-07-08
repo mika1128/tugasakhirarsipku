@@ -1,5 +1,270 @@
 // Public JavaScript Functions
 
+// Enhanced search functionality for all document types
+function searchAllDocuments(query) {
+    if (!query) return;
+    
+    // Search in different document types
+    const searchPromises = [
+        searchKeluargaDocuments(query),
+        searchArsipVital(query),
+        searchArsipInactive(query),
+        searchAgenda(query)
+    ];
+    
+    Promise.all(searchPromises).then(results => {
+        displaySearchResults(results, query);
+    }).catch(error => {
+        console.error('Search error:', error);
+        showAlert('Terjadi kesalahan saat mencari. Silakan coba lagi.', 'error');
+    });
+}
+
+// Search in keluarga documents
+async function searchKeluargaDocuments(query) {
+    try {
+        const response = await fetch('../pages/get_keluarga_dokumen.php');
+        const result = await response.json();
+        
+        if (result.status === 'success') {
+            return result.data.filter(doc => 
+                doc.nama_dokumen.toLowerCase().includes(query.toLowerCase()) ||
+                (doc.deskripsi_dokumen && doc.deskripsi_dokumen.toLowerCase().includes(query.toLowerCase()))
+            ).map(doc => ({
+                ...doc,
+                type: 'keluarga',
+                title: doc.nama_dokumen,
+                description: doc.deskripsi_dokumen
+            }));
+        }
+        return [];
+    } catch (error) {
+        console.error('Error searching keluarga documents:', error);
+        return [];
+    }
+}
+
+// Search in arsip vital
+async function searchArsipVital(query) {
+    try {
+        const response = await fetch('../pages/get_arsip_vital.php');
+        const result = await response.json();
+        
+        if (result.status === 'success') {
+            return result.data.filter(doc => 
+                doc.nomor_surat.toLowerCase().includes(query.toLowerCase()) ||
+                (doc.berita_acara_surat && doc.berita_acara_surat.toLowerCase().includes(query.toLowerCase()))
+            ).map(doc => ({
+                ...doc,
+                type: 'arsip_vital',
+                title: `Surat No. ${doc.nomor_surat}`,
+                description: doc.berita_acara_surat
+            }));
+        }
+        return [];
+    } catch (error) {
+        console.error('Error searching arsip vital:', error);
+        return [];
+    }
+}
+
+// Search in arsip inactive
+async function searchArsipInactive(query) {
+    try {
+        const response = await fetch('../pages/get_arsip_inactive.php');
+        const result = await response.json();
+        
+        if (result.status === 'success') {
+            return result.data.filter(doc => 
+                doc.nomor_surat.toLowerCase().includes(query.toLowerCase()) ||
+                (doc.berita_acara_surat && doc.berita_acara_surat.toLowerCase().includes(query.toLowerCase()))
+            ).map(doc => ({
+                ...doc,
+                type: 'arsip_inactive',
+                title: `Surat No. ${doc.nomor_surat}`,
+                description: doc.berita_acara_surat
+            }));
+        }
+        return [];
+    } catch (error) {
+        console.error('Error searching arsip inactive:', error);
+        return [];
+    }
+}
+
+// Search in agenda
+async function searchAgenda(query) {
+    try {
+        const response = await fetch('../pages/get_agenda.php');
+        const result = await response.json();
+        
+        if (result.status === 'success') {
+            return result.data.filter(agenda => 
+                agenda.title.toLowerCase().includes(query.toLowerCase()) ||
+                agenda.description.toLowerCase().includes(query.toLowerCase()) ||
+                (agenda.location && agenda.location.toLowerCase().includes(query.toLowerCase()))
+            ).map(agenda => ({
+                ...agenda,
+                type: 'agenda',
+                title: agenda.title,
+                description: agenda.description
+            }));
+        }
+        return [];
+    } catch (error) {
+        console.error('Error searching agenda:', error);
+        return [];
+    }
+}
+
+// Display search results
+function displaySearchResults(results, query) {
+    const allResults = results.flat();
+    
+    if (allResults.length === 0) {
+        showAlert(`Tidak ditemukan hasil untuk "${query}"`, 'info');
+        return;
+    }
+    
+    // Create search results modal
+    const modal = document.createElement('div');
+    modal.className = 'search-modal';
+    modal.innerHTML = `
+        <div class="search-modal-content">
+            <div class="search-modal-header">
+                <h3>Hasil Pencarian: "${query}"</h3>
+                <button class="close-search" onclick="this.closest('.search-modal').remove()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="search-results">
+                ${allResults.map(result => `
+                    <div class="search-result-item" data-type="${result.type}">
+                        <div class="result-type">${getTypeLabel(result.type)}</div>
+                        <h4>${result.title}</h4>
+                        <p>${result.description || 'Tidak ada deskripsi'}</p>
+                        <div class="result-meta">
+                            <span class="status-badge">${result.status || 'N/A'}</span>
+                            ${result.tanggal_dibuat ? `<span class="result-date">${result.tanggal_dibuat}</span>` : ''}
+                            ${result.tahun_dibuat ? `<span class="result-date">${result.tahun_dibuat}</span>` : ''}
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+    `;
+    
+    // Add modal styles
+    if (!document.getElementById('search-modal-styles')) {
+        const style = document.createElement('style');
+        style.id = 'search-modal-styles';
+        style.textContent = `
+            .search-modal {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.8);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 10000;
+            }
+            .search-modal-content {
+                background: #2f3032;
+                border-radius: 15px;
+                max-width: 800px;
+                width: 90%;
+                max-height: 80vh;
+                overflow: hidden;
+                display: flex;
+                flex-direction: column;
+            }
+            .search-modal-header {
+                padding: 20px;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+            .search-modal-header h3 {
+                color: #e8eaed;
+                margin: 0;
+            }
+            .close-search {
+                background: none;
+                border: none;
+                color: #9aa0a6;
+                font-size: 20px;
+                cursor: pointer;
+                padding: 5px;
+            }
+            .close-search:hover {
+                color: #e8eaed;
+            }
+            .search-results {
+                padding: 20px;
+                overflow-y: auto;
+                max-height: 60vh;
+            }
+            .search-result-item {
+                background: #202124;
+                border-radius: 10px;
+                padding: 15px;
+                margin-bottom: 15px;
+                border: 1px solid rgba(255, 255, 255, 0.05);
+            }
+            .result-type {
+                background: #4285f4;
+                color: white;
+                padding: 4px 8px;
+                border-radius: 12px;
+                font-size: 12px;
+                display: inline-block;
+                margin-bottom: 10px;
+            }
+            .search-result-item h4 {
+                color: #e8eaed;
+                margin-bottom: 8px;
+            }
+            .search-result-item p {
+                color: #9aa0a6;
+                margin-bottom: 10px;
+            }
+            .result-meta {
+                display: flex;
+                gap: 10px;
+                align-items: center;
+            }
+            .result-date {
+                color: #8ab4f8;
+                font-size: 12px;
+            }
+        `;
+        document.head.appendChild(style);
+    }
+    
+    document.body.appendChild(modal);
+    
+    // Close modal when clicking outside
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            modal.remove();
+        }
+    });
+}
+
+function getTypeLabel(type) {
+    switch (type) {
+        case 'keluarga': return 'Dokumen Keluarga';
+        case 'arsip_vital': return 'Arsip Vital';
+        case 'arsip_inactive': return 'Arsip Inactive';
+        case 'agenda': return 'Agenda';
+        default: return 'Dokumen';
+    }
+}
+
 // Global function to submit berkas
 async function submitBerkas(form) {
     const submitButton = form.querySelector('button[type="submit"]');
@@ -176,6 +441,19 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Auto-resize textarea
 document.addEventListener('DOMContentLoaded', function() {
+    // Global search functionality
+    const globalSearch = document.getElementById('globalSearch');
+    if (globalSearch) {
+        globalSearch.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                const query = this.value.trim();
+                if (query) {
+                    searchAllDocuments(query);
+                }
+            }
+        });
+    }
+    
     const textareas = document.querySelectorAll('textarea');
     
     textareas.forEach(textarea => {

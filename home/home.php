@@ -61,6 +61,13 @@ $userAvatarPath = 'https://via.placeholder.com/36/4285F4/FFFFFF?text=' . strtoup
                     <i class="fas fa-search search-icon"></i>
                     <input type="text" placeholder="Search" class="search-input">
                 </div>
+                
+                <div class="header-right">
+                    <a href="../pages/logout.php" class="btn btn-sm" style="background: linear-gradient(135deg, #f44336, #e57373); color: white; text-decoration: none;">
+                        <i class="fas fa-sign-out-alt"></i>
+                        Logout
+                    </a>
+                </div>
             </header>
 
             <div class="greeting-text-area" style="padding: 20px 30px 0; color: #e8eaed; font-size: 24px; font-weight: 500;"
