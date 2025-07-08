@@ -16,11 +16,11 @@
             </div>
             <nav>
                 <ul class="nav-menu">
-                    <li><a href="index.php" class="active">Beranda</a></li>
+                    <li><a href="index.php">Beranda</a></li>
                     <li><a href="tentang_dprd.php">Tentang DPRD</a></li>
                     <li><a href="kearsipan_dprd.php">Kearsipan</a></li>
                     <li><a href="kegiatan_pegawai.php">Kegiatan</a></li>
-                    <li><a href="chat.php">Hubungi Kami</a></li>
+                    <li><a href="chat.php" class="active">Hubungi Kami</a></li>
                     <li><a href="../pages/login.php" class="login-btn">
                     <i class="fas fa-sign-in-alt"></i>
                     Login
@@ -30,15 +30,31 @@
     </header>
 
     <main class="main-container">
-        <div class="content-page">
-            <h1><i class="fas fa-comments"></i> Chat dengan Admin DPRD</h1>
-            <p>Hubungi admin untuk pertanyaan, konsultasi, atau bantuan terkait layanan kearsipan DPRD.</p>
+        <div class="content-page" style="text-align: center; margin-bottom: 2rem;">
+            <h1><i class="fas fa-comments"></i> Layanan Komunikasi DPRD</h1>
+            <p>Kami menyediakan berbagai saluran komunikasi untuk memudahkan masyarakat dalam mendapatkan informasi, konsultasi, dan bantuan terkait layanan kearsipan DPRD. Tim customer service kami siap membantu Anda dengan respon yang cepat dan solusi yang tepat.</p>
+            
+            <div style="margin: 2rem 0;">
+                <button onclick="toggleChatModal()" class="btn" style="font-size: 1.1rem; padding: 1rem 2rem;">
+                    <i class="fas fa-comment-dots"></i>
+                    Mulai Chat dengan Admin
+                </button>
+            </div>
         </div>
 
-        <div class="chat-container">
+        <!-- Chat Modal -->
+        <div id="chatModal" class="chat-modal" style="display: none;">
+            <div class="chat-modal-content">
+                <div class="chat-modal-header">
+                    <h3><i class="fas fa-user-tie"></i> Chat dengan Admin DPRD</h3>
+                    <button onclick="toggleChatModal()" class="close-chat-btn">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="chat-container">
             <div class="chat-header">
-                <h3><i class="fas fa-user-tie"></i> Admin DPRD Kearsipan</h3>
-                <small>Tim kami siap membantu Anda</small>
+                    <h4>Admin DPRD Kearsipan</h4>
+                    <small>Tim kami siap membantu Anda</small>
             </div>
             
             <div class="chat-messages" id="chatMessages">
@@ -55,11 +71,13 @@
                     Kirim
                 </button>
             </div>
+                </div>
+            </div>
         </div>
 
         <div class="form-container">
-            <h2><i class="fas fa-envelope"></i> Kirim Pesan Detail</h2>
-            <p>Untuk pertanyaan yang lebih detail, silakan isi formulir di bawah ini:</p>
+            <h2><i class="fas fa-envelope"></i> Formulir Pesan Terstruktur</h2>
+            <p>Jika Anda memiliki pertanyaan yang kompleks atau memerlukan dokumentasi resmi, silakan gunakan formulir di bawah ini. Pesan Anda akan diproses oleh tim yang tepat dan mendapat respons dalam bentuk yang lebih formal sesuai dengan kebutuhan Anda.</p>
             
             <form id="detailMessageForm">
                 <div class="form-group">
@@ -101,31 +119,27 @@
         </div>
 
         <div class="content-page">
-            <h2><i class="fas fa-question-circle"></i> Pertanyaan yang Sering Diajukan (FAQ)</h2>
+            <h2><i class="fas fa-question-circle"></i> Informasi Umum dan Pertanyaan Populer</h2>
+            <p>Berikut adalah kumpulan informasi dan jawaban atas pertanyaan-pertanyaan yang paling sering diajukan oleh masyarakat terkait layanan kearsipan DPRD. Informasi ini disusun berdasarkan pengalaman dan interaksi nyata dengan pengguna layanan kami.</p>
             
             <div style="margin-bottom: 2rem;">
-                <h3>Q: Bagaimana cara mengajukan berkas keluarga?</h3>
-                <p><strong>A:</strong> Anda dapat mengajukan berkas keluarga melalui halaman <a href="berkas_masyarakat.php">Berkas Masyarakat/Keluarga</a>. Isi formulir dengan lengkap dan upload dokumen pendukung jika diperlukan.</p>
+                <h3>Prosedur Pengajuan Berkas Keluarga</h3>
+                <p>Untuk mengajukan berkas keluarga, Anda dapat memanfaatkan layanan online kami melalui halaman <a href="berkas_masyarakat.php">Berkas Masyarakat/Keluarga</a>. Proses pengajuan dirancang untuk memberikan kemudahan maksimal kepada masyarakat, dimana Anda hanya perlu mengisi formulir secara lengkap dan mengunggah dokumen pendukung yang diperlukan. Tim kami akan memproses pengajuan Anda dengan standar pelayanan yang telah ditetapkan, dan Anda akan mendapat notifikasi perkembangan melalui email yang terdaftar.</p>
             </div>
 
             <div style="margin-bottom: 2rem;">
-                <h3>Q: Berapa lama waktu pemrosesan berkas?</h3>
-                <p><strong>A:</strong> Waktu pemrosesan berbeda-beda tergantung jenis berkas:</p>
-                <ul>
-                    <li>Berkas Masyarakat/Keluarga: 1-3 hari kerja</li>
-                    <li>Berkas Masuk (Vital): 2-5 hari kerja</li>
-                    <li>Berkas Keluar (Inactive): 1-2 hari kerja</li>
-                </ul>
+                <h3>Estimasi Waktu Pemrosesan Berkas</h3>
+                <p>Waktu pemrosesan berkas bervariasi tergantung pada jenis dan kompleksitas dokumen yang diajukan. Untuk berkas masyarakat dan keluarga, kami berkomitmen menyelesaikan dalam rentang 1-3 hari kerja dengan mempertimbangkan kelengkapan dokumen dan verifikasi yang diperlukan. Berkas masuk yang bersifat vital memerlukan waktu pemrosesan 2-5 hari kerja karena melibatkan proses verifikasi yang lebih mendalam dan koordinasi dengan berbagai pihak terkait. Sementara untuk berkas keluar atau dokumen inactive, prosesnya relatif lebih cepat yaitu 1-2 hari kerja karena sifatnya yang lebih administratif.</p>
             </div>
 
             <div style="margin-bottom: 2rem;">
-                <h3>Q: Bagaimana cara mengecek status pengajuan?</h3>
-                <p><strong>A:</strong> Anda akan mendapat notifikasi melalui email setiap ada update status pengajuan. Anda juga dapat menghubungi kami melalui chat untuk menanyakan status.</p>
+                <h3>Sistem Monitoring Status Pengajuan</h3>
+                <p>Kami memahami pentingnya transparansi dalam proses penanganan berkas, oleh karena itu sistem notifikasi otomatis telah diimplementasikan untuk memberikan update status pengajuan Anda melalui email yang terdaftar. Setiap perubahan status, mulai dari penerimaan berkas, proses verifikasi, hingga penyelesaian, akan diinformasikan secara real-time. Selain itu, Anda juga dapat menghubungi tim customer service kami melalui fitur chat untuk mendapatkan informasi status terkini atau klarifikasi tambahan yang mungkin diperlukan.</p>
             </div>
 
             <div style="margin-bottom: 2rem;">
-                <h3>Q: Format file apa saja yang bisa diupload?</h3>
-                <p><strong>A:</strong> Format yang didukung meliputi PDF, DOC, DOCX, XLS, XLSX, JPG, JPEG, dan PNG dengan ukuran maksimal 10-20MB tergantung jenis pengajuan.</p>
+                <h3>Spesifikasi Format File yang Didukung</h3>
+                <p>Sistem kami mendukung berbagai format file yang umum digunakan untuk memudahkan masyarakat dalam mengunggah dokumen. Format yang dapat diterima meliputi dokumen PDF untuk file yang sudah final, format Microsoft Office seperti DOC dan DOCX untuk dokumen teks, XLS dan XLSX untuk spreadsheet, serta format gambar JPG, JPEG, dan PNG untuk dokumen yang berupa scan atau foto. Ukuran file maksimal yang dapat diunggah bervariasi antara 10-20MB tergantung pada jenis pengajuan, dengan pertimbangan keseimbangan antara kualitas dokumen dan efisiensi sistem.</p>
             </div>
         </div>
     </main>
@@ -135,6 +149,24 @@
     </footer>
 
     <script>
+        // Chat Modal Functions
+        function toggleChatModal() {
+            const modal = document.getElementById('chatModal');
+            if (modal.style.display === 'none' || modal.style.display === '') {
+                modal.style.display = 'flex';
+                loadMessages();
+            } else {
+                modal.style.display = 'none';
+            }
+        }
+        
+        // Close modal when clicking outside
+        document.getElementById('chatModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                toggleChatModal();
+            }
+        });
+        
         // Load existing messages
         async function loadMessages() {
             try {
@@ -297,7 +329,85 @@
         }
 
         // Load messages when page loads
-        document.addEventListener('DOMContentLoaded', loadMessages);
+        // Removed auto-load, now only loads when chat modal is opened
     </script>
+    
+    <style>
+        /* Chat Modal Styles */
+        .chat-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+        }
+        
+        .chat-modal-content {
+            background: #2f3032;
+            border-radius: 15px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .chat-modal-header {
+            padding: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(135deg, #4285f4, #8ab4f8);
+            color: white;
+        }
+        
+        .chat-modal-header h3 {
+            margin: 0;
+            font-size: 1.2rem;
+        }
+        
+        .close-chat-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 50%;
+            transition: background 0.3s ease;
+        }
+        
+        .close-chat-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .chat-modal .chat-container {
+            height: 400px;
+            margin: 0;
+        }
+        
+        .chat-modal .chat-header {
+            background: #3c4043;
+            padding: 15px;
+        }
+        
+        .chat-modal .chat-header h4 {
+            margin: 0;
+            color: #e8eaed;
+            font-size: 1rem;
+        }
+        
+        .chat-modal .chat-header small {
+            color: #9aa0a6;
+        }
+    </style>
 </body>
 </html>

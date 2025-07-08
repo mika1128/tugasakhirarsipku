@@ -16,9 +16,9 @@
             </div>
             <nav>
                 <ul class="nav-menu">
-                    <li><a href="index.php" class="active">Beranda</a></li>
+                    <li><a href="index.php" >Beranda</a></li>
                     <li><a href="tentang_dprd.php">Tentang DPRD</a></li>
-                    <li><a href="kearsipan_dprd.php">Kearsipan</a></li>
+                    <li><a href="kearsipan_dprd.php" class="active">Kearsipan</a></li>
                     <li><a href="kegiatan_pegawai.php">Kegiatan</a></li>
                     <li><a href="chat.php">Hubungi Kami</a></li>
                     <li><a href="../pages/login.php" class="login-btn">
