@@ -31,7 +31,7 @@
 
     <main class="main-container">
         <div class="form-container">
-            <h1><i class="fas fa-users"></i> Pengajuan Berkas Masyarakat/Keluarga</h1>
+            <h1><i class="fas fa-users"></i> Pengajuan Berkas Masyarakat dan Keluarga</h1>
             <p>Silakan isi formulir di bawah ini untuk mengajukan berkas keluarga Anda. Admin akan memproses pengajuan Anda dalam 1-3 hari kerja.</p>
 
             <div id="alertContainer"></div>

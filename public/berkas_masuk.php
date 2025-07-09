@@ -31,7 +31,7 @@
 
     <main class="main-container">
         <div class="form-container">
-            <h1><i class="fas fa-inbox"></i> Pengajuan Berkas Masuk (Vital)</h1>
+            <h1><i class="fas fa-inbox"></i> Pengajuan Berkas Vital</h1>
             <p>Formulir ini untuk mengajukan berkas masuk yang bersifat vital dan penting untuk diarsipkan oleh Admin.</p>
 
             <div id="alertContainer"></div>

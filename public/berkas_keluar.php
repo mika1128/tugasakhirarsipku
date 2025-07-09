@@ -31,7 +31,7 @@
 
     <main class="main-container">
         <div class="form-container">
-            <h1><i class="fas fa-paper-plane"></i> Pengajuan Berkas Keluar (Inactive)</h1>
+            <h1><i class="fas fa-paper-plane"></i> Pengajuan Berkas Inactive</h1>
             <p>Formulir ini untuk mengajukan berkas keluar atau dokumen yang sudah tidak aktif untuk diarsipkan.</p>
 
             <div id="alertContainer"></div>
@@ -65,7 +65,7 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="jenis_berkas">Jenis Berkas Keluar <span style="color: red;">*</span></label>
+                    <label for="jenis_berkas">Jenis Berkas Vital <span style="color: red;">*</span></label>
                     <select id="jenis_berkas" name="jenis_berkas" class="form-control" required>
                         <option value="">Pilih jenis berkas</option>
                         <option value="Surat Izin Usaha">Surat Izin Usaha</option>
