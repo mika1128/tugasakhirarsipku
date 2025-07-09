@@ -40,7 +40,7 @@
                 <div class="service-icon berkas-masyarakat">
                     <i class="fas fa-users"></i>
                 </div>
-                <h3>Berkas Masyarakat/Keluarga</h3>
+                <h3>Berkas Masyarakat dan Keluarga</h3>
                 <p>Pengajuan dan pengurusan dokumen keluarga seperti surat keterangan, akta, dan dokumen lainnya</p>
                 <a href="berkas_masyarakat.php" class="btn">
                     <i class="fas fa-file-plus"></i>

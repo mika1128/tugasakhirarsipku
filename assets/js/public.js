@@ -277,7 +277,7 @@ async function submitBerkas(form) {
     try {
         const formData = new FormData(form);
         
-        const response = await fetch('submit-berkas.php', {
+        const response = await fetch('submit_berkas.php', {
             method: 'POST',
             body: formData
         });
