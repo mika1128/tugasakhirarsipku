@@ -4,8 +4,7 @@ require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/auth.php';
 
 $auth = new Auth();
-$auth->requireAdmin();
-
+//$auth->requireAdmin();
 header('Content-Type: application/json');
 
 $db = new Database();

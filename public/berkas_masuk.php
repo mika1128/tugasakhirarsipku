@@ -65,7 +65,7 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="jenis_berkas">Jenis Berkas Masuk <span style="color: red;">*</span></label>
+                    <label for="jenis_berkas">Jenis Berkas Vital <span style="color: red;">*</span></label>
                     <select id="jenis_berkas" name="jenis_berkas" class="form-control" required>
                         <option value="">Pilih jenis berkas</option>
                         <option value="Proposal Kerjasama">Proposal Kerjasama</option>

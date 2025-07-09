@@ -4,10 +4,6 @@ require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/auth.php';
 
 $auth = new Auth();
-$auth->requireAdmin(); // Hanya admin yang bisa mengakses
-
-header('Content-Type: application/json');
-
 $db = new Database();
 $conn = $db->getConnection();
 
