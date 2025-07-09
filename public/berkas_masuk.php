@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Berkas Masuk (Vital) - DPRD Kearsipan</title>
+    <title>Berkas Vital</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="../assets/css/public.css">
 </head>
@@ -12,7 +12,7 @@
         <div class="header-content">
             <div class="logo">
                 <i class="fas fa-archive"></i>
-                <span>DPRD Kearsipan</span>
+                <span>ArsipKu</span>
             </div>
             <nav>
                 <ul class="nav-menu">
@@ -32,7 +32,7 @@
     <main class="main-container">
         <div class="form-container">
             <h1><i class="fas fa-inbox"></i> Pengajuan Berkas Masuk (Vital)</h1>
-            <p>Formulir ini untuk mengajukan berkas masuk yang bersifat vital dan penting untuk diarsipkan oleh DPRD.</p>
+            <p>Formulir ini untuk mengajukan berkas masuk yang bersifat vital dan penting untuk diarsipkan oleh Admin.</p>
 
             <div id="alertContainer"></div>
 
@@ -107,7 +107,7 @@
         <div class="form-container">
             <h2><i class="fas fa-shield-alt"></i> Ketentuan Berkas Vital</h2>
             <ul>
-                <li><strong>Berkas Vital</strong> adalah dokumen yang sangat penting dan strategis bagi DPRD</li>
+                <li><strong>Berkas Vital</strong> adalah dokumen yang sangat penting dan strategis bagi Instansi Pemerintah</li>
                 <li>Dokumen akan disimpan dengan sistem keamanan tinggi</li>
                 <li>Akses terhadap berkas vital terbatas dan memerlukan otorisasi khusus</li>
                 <li>Masa simpan berkas vital adalah permanen</li>
@@ -118,7 +118,7 @@
     </main>
 
     <footer class="main-footer">
-        <p>&copy; 2025 Sistem Informasi Kearsipan DPRD. Semua hak cipta dilindungi.</p>
+        <p>&copy; 2025 ArsipKu. Semua hak cipta dilindungi.</p>
     </footer>
 
     <script src="../assets/js/public.js"></script>

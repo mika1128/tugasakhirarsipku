@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kearsipan DPRD - DPRD Kearsipan</title>
+    <title>Sistem Kearsipan</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="../assets/css/public.css">
 </head>
@@ -12,7 +12,7 @@
         <div class="header-content">
             <div class="logo">
                 <i class="fas fa-archive"></i>
-                <span>DPRD Kearsipan</span>
+                <span>ArsipKu</span>
             </div>
             <nav>
                 <ul class="nav-menu">
@@ -31,7 +31,7 @@
 
     <main class="main-container">
         <div class="content-page">
-            <h1><i class="fas fa-archive"></i> Sistem Kearsipan DPRD</h1>
+            <h1><i class="fas fa-archive"></i> Sistem Kearsipan </h1>
 
             <h2>Retensi Arsip</h2>
             <table style="width: 100%; border-collapse: collapse; margin: 1rem 0;">
@@ -110,7 +110,7 @@
     </main>
 
     <footer class="main-footer">
-        <p>&copy; 2025 Sistem Informasi Kearsipan DPRD. Semua hak cipta dilindungi.</p>
+        <p>&copy; 2025 ArsipKu. Semua hak cipta dilindungi.</p>
     </footer>
 </body>
 </html>

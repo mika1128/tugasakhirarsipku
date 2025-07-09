@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kegiatan Pegawai - DPRD Kearsipan</title>
+    <title>Kegiatan Pegawai Pemerintahan</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="../assets/css/public.css">
 </head>
@@ -12,7 +12,7 @@
         <div class="header-content">
             <div class="logo">
                 <i class="fas fa-archive"></i>
-                <span>DPRD Kearsipan</span>
+                <span>ArsipKu</span>
             </div>
             <nav>
                <ul class="nav-menu">
@@ -31,8 +31,8 @@
 
     <main class="main-container">
         <div class="content-page">
-            <h1><i class="fas fa-calendar-alt"></i> Kegiatan Pegawai DPRD</h1>
-            <p>Berikut adalah jadwal kegiatan dan agenda pegawai DPRD yang dapat diakses oleh masyarakat.</p>
+            <h1><i class="fas fa-calendar-alt"></i> Kegiatan Pegawai Pemerintah</h1>
+            <p>Berikut adalah jadwal kegiatan dan agenda pegawai yang dapat diakses oleh masyarakat.</p>
             
             <div id="kegiatanContainer" class="kegiatan-grid">
                 <div class="loading">
@@ -44,7 +44,7 @@
     </main>
 
     <footer class="main-footer">
-        <p>&copy; 2025 Sistem Informasi Kearsipan DPRD. Semua hak cipta dilindungi.</p>
+        <p>&copy; 2025 ArsipKu. Semua hak cipta dilindungi.</p>
     </footer>
 
     <script>

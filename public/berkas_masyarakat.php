@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pengajuan Berkas Masyarakat/Keluarga - DPRD Kearsipan</title>
+    <title>Pengajuan Berkas Masyarakat dan Keluarga</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="../assets/css/public.css">
 </head>
@@ -12,7 +12,7 @@
         <div class="header-content">
             <div class="logo">
                 <i class="fas fa-archive"></i>
-                <span>DPRD Kearsipan</span>
+                <span>ArsipKu</span>
             </div>
             <nav>
                 <ul class="nav-menu">
@@ -118,7 +118,7 @@
     </main>
 
     <footer class="main-footer">
-        <p>&copy; 2025 Sistem Informasi Kearsipan DPRD. Semua hak cipta dilindungi.</p>
+        <p>&copy; 2025 ArsipKu. Semua hak cipta dilindungi.</p>
     </footer>
 
     <script src="../assets/js/public.js"></script>

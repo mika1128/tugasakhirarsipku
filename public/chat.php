@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chat dengan Admin - DPRD Kearsipan</title>
+    <title>Chat dengan Admin</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="../assets/css/public.css">
 </head>
@@ -12,7 +12,7 @@
         <div class="header-content">
             <div class="logo">
                 <i class="fas fa-archive"></i>
-                <span>DPRD Kearsipan</span>
+                <span>ArsipKu</span>
             </div>
             <nav>
                 <ul class="nav-menu">
@@ -30,8 +30,8 @@
 
     <main class="main-container">
         <div class="content-page" style="text-align: center; margin-bottom: 2rem;">
-            <h1><i class="fas fa-comments"></i> Layanan Komunikasi DPRD</h1>
-            <p>Kami menyediakan berbagai saluran komunikasi untuk memudahkan masyarakat dalam mendapatkan informasi, konsultasi, dan bantuan terkait layanan kearsipan DPRD. Tim customer service kami siap membantu Anda dengan respon yang cepat dan solusi yang tepat.</p>
+            <h1><i class="fas fa-comments"></i> Layanan Komunikasi ArsipKu</h1>
+            <p>Kami menyediakan berbagai saluran komunikasi untuk memudahkan masyarakat dalam mendapatkan informasi, konsultasi, dan bantuan terkait layanan ArsipKu. Tim customer service kami siap membantu Anda dengan respon yang cepat dan solusi yang tepat.</p>
             
             <div style="margin: 2rem 0;">
                 <button onclick="toggleChatModal()" class="btn" style="font-size: 1.1rem; padding: 1rem 2rem;">
@@ -45,20 +45,20 @@
         <div id="chatModal" class="chat-modal" style="display: none;">
             <div class="chat-modal-content">
                 <div class="chat-modal-header">
-                    <h3><i class="fas fa-user-tie"></i> Chat dengan Admin DPRD</h3>
+                    <h3><i class="fas fa-user-tie"></i> Chat dengan Admin</h3>
                     <button onclick="toggleChatModal()" class="close-chat-btn">
                         <i class="fas fa-times"></i>
                     </button>
                 </div>
                 <div class="chat-container">
             <div class="chat-header">
-                    <h4>Admin DPRD Kearsipan</h4>
+                    <h4>Admin ArsipKu</h4>
                     <small>Tim kami siap membantu Anda</small>
             </div>
             
             <div class="chat-messages" id="chatMessages">
                 <div class="message admin">
-                    <div>Selamat datang di layanan chat DPRD Kearsipan! Bagaimana kami dapat membantu Anda hari ini?</div>
+                    <div>Selamat datang di layanan chat ArsipKu! Bagaimana kami dapat membantu Anda hari ini?</div>
                     <div class="message-info">Admin • Sekarang</div>
                 </div>
             </div>
@@ -148,7 +148,7 @@
     </main>
 
     <footer class="main-footer">
-        <p>&copy; 2025 Sistem Informasi Kearsipan DPRD. Semua hak cipta dilindungi.</p>
+        <p>&copy; 2025 ArsipKu. Semua hak cipta dilindungi.</p>
     </footer>
 
     <script>
@@ -182,7 +182,7 @@
                     // Clear existing messages except welcome message
                     chatMessages.innerHTML = `
                         <div class="message admin">
-                            <div>Selamat datang di layanan chat DPRD Kearsipan! Bagaimana kami dapat membantu Anda hari ini?</div>
+                            <div>Selamat datang di layanan chat ArsipKu! Bagaimana kami dapat membantu Anda hari ini?</div>
                             <div class="message-info">Admin • Sekarang</div>
                         </div>
                     `;
