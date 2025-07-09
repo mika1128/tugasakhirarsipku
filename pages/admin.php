@@ -622,7 +622,7 @@ try {
                     <select id="status" name="status" class="form-control" required>
                         <option value="pending">Tertunda</option>
                         <option value="in_progress">Dalam Proses</option>
-                        <option value="complete">Selesai</option>
+                        <option value="completed">Selesai</option>
                     </select>
                 </div>
 

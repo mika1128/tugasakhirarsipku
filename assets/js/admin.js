@@ -76,7 +76,7 @@ window.loadAgendaData = function() {
                 let statusClass = 'status-pending';
                 if (agenda.status === 'in_progress') {
                     statusClass = 'status-active';
-                } else if (agenda.status === 'complete') {
+                } else if (agenda.status === 'completed') {
                     statusClass = 'status-inactive';
                 }
 
@@ -141,7 +141,7 @@ window.loadHistoryData = function() {
             tbody.innerHTML = '';
             data.forEach((agenda, index) => {
                 let statusClass = 'status-inactive';
-                if (agenda.status === 'complete') {
+                if (agenda.status === 'completed') {
                     statusClass = 'status-inactive';
                 } else if (agenda.status === 'cancelled') {
                      statusClass = 'status-inactive';
@@ -524,7 +524,7 @@ window.archiveAgenda = function(id) {
 };
 
 window.archiveCompletedAgenda = function() {
-    if (confirm('Apakah Anda yakin ingin mengarsipkan semua agenda yang sudah selesai? Tindakan ini akan mengubah statusnya menjadi "complete".')) {
+    if (confirm('Apakah Anda yakin ingin mengarsipkan semua agenda yang sudah selesai? Tindakan ini akan mengubah statusnya menjadi "completed".')) {
         window.showNotification('Memproses pengarsipan...', 'info');
         fetch('/ArsipKu/pages/archive_agenda.php', {
             method: 'POST',
@@ -925,7 +925,7 @@ window.exportAgendaToCSV = function() {
 };
 
 window.exportHistoryToCSV = function() {
-    const csvContent = "ID,User,Judul,Tanggal,Status\n1,john_doe,Meeting Mingguan Tim A,2025-06-25 10:00,complete";
+    const csvContent = "ID,User,Judul,Tanggal,Status\n1,john_doe,Meeting Mingguan Tim A,2025-06-25 10:00,completed";
     window.downloadCSV(csvContent, 'history_export.csv');
 };
 

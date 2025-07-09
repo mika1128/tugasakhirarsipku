@@ -958,7 +958,7 @@ class HomeManager {
                     let statusClass = 'status-pending';
                     if (agenda.status === 'in_progress') {
                         statusClass = 'status-active';
-                    } else if (agenda.status === 'complete') {
+                    } else if (agenda.status === 'completed') {
                         statusClass = 'status-inactive';
                     }
 
@@ -1013,7 +1013,7 @@ class HomeManager {
                 tbody.innerHTML = '';
                 data.forEach((agenda, index) => {
                     let statusClass = 'status-inactive';
-                    if (agenda.status === 'complete') {
+                    if (agenda.status === 'completed') {
                         statusClass = 'status-inactive';
                     } else if (agenda.status === 'cancelled') {
                          statusClass = 'status-inactive';

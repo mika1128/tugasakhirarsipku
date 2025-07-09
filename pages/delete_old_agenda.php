@@ -18,7 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     try {
         // Hapus agenda yang sudah complete/cancelled dan end_date-nya lebih lama dari threshold_date
-        $query = "DELETE FROM agenda WHERE (status = 'complete' OR status = 'cancelled') AND end_date < :threshold_date";
+        $query = "DELETE FROM agenda WHERE (status = 'completed' OR status = 'cancelled') AND end_date < :threshold_date";
         $stmt = $conn->prepare($query);
         $stmt->bindParam(':threshold_date', $threshold_date);
         // Jika hanya admin yang bisa menghapus milik mereka, tambahkan AND user_id = :user_id

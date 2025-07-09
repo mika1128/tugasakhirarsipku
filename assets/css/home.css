@@ -126,7 +126,7 @@ table tr:hover {
     color: white;
 }
 
-.status-inactive { /* Untuk 'complete' atau 'cancelled' */
+.status-inactive { /* Untuk 'completed' atau 'cancelled' */
     background: #F44336; /* Merah */
     color: white;
 }
