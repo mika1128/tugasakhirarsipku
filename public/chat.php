@@ -17,7 +17,6 @@
             <nav>
                 <ul class="nav-menu">
                     <li><a href="index.php">Beranda</a></li>
-                    <li><a href="tentang_dprd.php">Tentang DPRD</a></li>
                     <li><a href="kearsipan_dprd.php">Kearsipan</a></li>
                     <li><a href="kegiatan_pegawai.php">Kegiatan</a></li>
                     <li><a href="chat.php" class="active">Hubungi Kami</a></li>
@@ -74,7 +73,7 @@
                 </div>
             </div>
         </div>
-
+        
         <div class="form-container">
             <h2><i class="fas fa-envelope"></i> Formulir Pesan Terstruktur</h2>
             <p>Jika Anda memiliki pertanyaan yang kompleks atau memerlukan dokumentasi resmi, silakan gunakan formulir di bawah ini. Pesan Anda akan diproses oleh tim yang tepat dan mendapat respons dalam bentuk yang lebih formal sesuai dengan kebutuhan Anda.</p>
@@ -119,27 +118,31 @@
         </div>
 
         <div class="content-page">
-            <h2><i class="fas fa-question-circle"></i> Informasi Umum dan Pertanyaan Populer</h2>
-            <p>Berikut adalah kumpulan informasi dan jawaban atas pertanyaan-pertanyaan yang paling sering diajukan oleh masyarakat terkait layanan kearsipan DPRD. Informasi ini disusun berdasarkan pengalaman dan interaksi nyata dengan pengguna layanan kami.</p>
+            <h2><i class="fas fa-question-circle"></i> Pertanyaan yang Sering Diajukan (FAQ)</h2>
             
             <div style="margin-bottom: 2rem;">
-                <h3>Prosedur Pengajuan Berkas Keluarga</h3>
-                <p>Untuk mengajukan berkas keluarga, Anda dapat memanfaatkan layanan online kami melalui halaman <a href="berkas_masyarakat.php">Berkas Masyarakat/Keluarga</a>. Proses pengajuan dirancang untuk memberikan kemudahan maksimal kepada masyarakat, dimana Anda hanya perlu mengisi formulir secara lengkap dan mengunggah dokumen pendukung yang diperlukan. Tim kami akan memproses pengajuan Anda dengan standar pelayanan yang telah ditetapkan, dan Anda akan mendapat notifikasi perkembangan melalui email yang terdaftar.</p>
+                <h3>Q: Bagaimana cara mengajukan berkas keluarga?</h3>
+                <p><strong>A:</strong> Anda dapat mengajukan berkas keluarga melalui halaman <a href="berkas_masyarakat.php">Berkas Masyarakat/Keluarga</a>. Isi formulir dengan lengkap dan upload dokumen pendukung jika diperlukan.</p>
             </div>
 
             <div style="margin-bottom: 2rem;">
-                <h3>Estimasi Waktu Pemrosesan Berkas</h3>
-                <p>Waktu pemrosesan berkas bervariasi tergantung pada jenis dan kompleksitas dokumen yang diajukan. Untuk berkas masyarakat dan keluarga, kami berkomitmen menyelesaikan dalam rentang 1-3 hari kerja dengan mempertimbangkan kelengkapan dokumen dan verifikasi yang diperlukan. Berkas masuk yang bersifat vital memerlukan waktu pemrosesan 2-5 hari kerja karena melibatkan proses verifikasi yang lebih mendalam dan koordinasi dengan berbagai pihak terkait. Sementara untuk berkas keluar atau dokumen inactive, prosesnya relatif lebih cepat yaitu 1-2 hari kerja karena sifatnya yang lebih administratif.</p>
+                <h3>Q: Berapa lama waktu pemrosesan berkas?</h3>
+                <p><strong>A:</strong> Waktu pemrosesan berbeda-beda tergantung jenis berkas:</p>
+                <ul>
+                    <li>Berkas Masyarakat/Keluarga: 1-3 hari kerja</li>
+                    <li>Berkas Masuk (Vital): 2-5 hari kerja</li>
+                    <li>Berkas Keluar (Inactive): 1-2 hari kerja</li>
+                </ul>
             </div>
 
             <div style="margin-bottom: 2rem;">
-                <h3>Sistem Monitoring Status Pengajuan</h3>
-                <p>Kami memahami pentingnya transparansi dalam proses penanganan berkas, oleh karena itu sistem notifikasi otomatis telah diimplementasikan untuk memberikan update status pengajuan Anda melalui email yang terdaftar. Setiap perubahan status, mulai dari penerimaan berkas, proses verifikasi, hingga penyelesaian, akan diinformasikan secara real-time. Selain itu, Anda juga dapat menghubungi tim customer service kami melalui fitur chat untuk mendapatkan informasi status terkini atau klarifikasi tambahan yang mungkin diperlukan.</p>
+                <h3>Q: Bagaimana cara mengecek status pengajuan?</h3>
+                <p><strong>A:</strong> Anda akan mendapat notifikasi melalui email setiap ada update status pengajuan. Anda juga dapat menghubungi kami melalui chat untuk menanyakan status.</p>
             </div>
 
             <div style="margin-bottom: 2rem;">
-                <h3>Spesifikasi Format File yang Didukung</h3>
-                <p>Sistem kami mendukung berbagai format file yang umum digunakan untuk memudahkan masyarakat dalam mengunggah dokumen. Format yang dapat diterima meliputi dokumen PDF untuk file yang sudah final, format Microsoft Office seperti DOC dan DOCX untuk dokumen teks, XLS dan XLSX untuk spreadsheet, serta format gambar JPG, JPEG, dan PNG untuk dokumen yang berupa scan atau foto. Ukuran file maksimal yang dapat diunggah bervariasi antara 10-20MB tergantung pada jenis pengajuan, dengan pertimbangan keseimbangan antara kualitas dokumen dan efisiensi sistem.</p>
+                <h3>Q: Format file apa saja yang bisa diupload?</h3>
+                <p><strong>A:</strong> Format yang didukung meliputi PDF, DOC, DOCX, XLS, XLSX, JPG, JPEG, dan PNG dengan ukuran maksimal 10-20MB tergantung jenis pengajuan.</p>
             </div>
         </div>
     </main>

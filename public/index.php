@@ -17,7 +17,6 @@
             <nav>
                 <ul class="nav-menu">
                     <li><a href="index.php" class="active">Beranda</a></li>
-                    <li><a href="tentang_dprd.php">Tentang DPRD</a></li>
                     <li><a href="kearsipan_dprd.php">Kearsipan</a></li>
                     <li><a href="kegiatan_pegawai.php">Kegiatan</a></li>
                     <li><a href="chat.php">Hubungi Kami</a></li>
@@ -34,17 +33,6 @@
         <section class="hero-section">
             <h1>Selamat Datang di Sistem Informasi Kearsipan DPRD</h1>
             <p>Layanan digital untuk mempermudah pengurusan berkas dan dokumen Anda</p>
-            
-            <!-- Search Bar -->
-            <div class="search-bar-container" style="max-width: 500px; margin: 0 auto 2rem;">
-                <i class="fas fa-search search-icon"></i>
-                <input type="text" placeholder="Cari dokumen, agenda, atau layanan..." class="search-input" id="globalSearch">
-            </div>
-            
-            <a href="#services" class="btn">
-                <i class="fas fa-arrow-down"></i>
-                Jelajahi Layanan
-            </a>
         </section>
 
         <section id="services" class="services-grid">
@@ -81,18 +69,6 @@
                 <a href="berkas_keluar.php" class="btn btn-warning">
                     <i class="fas fa-share"></i>
                     Kirim Berkas
-                </a>
-            </div>
-
-            <div class="service-card">
-                <div class="service-icon info">
-                    <i class="fas fa-info-circle"></i>
-                </div>
-                <h3>Tentang DPRD</h3>
-                <p>Informasi lengkap tentang Dewan Perwakilan Rakyat Daerah dan fungsinya</p>
-                <a href="tentang_dprd.php" class="btn btn-secondary">
-                    <i class="fas fa-book"></i>
-                    Pelajari Lebih
                 </a>
             </div>
 

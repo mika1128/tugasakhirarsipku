@@ -273,10 +273,6 @@ $userAvatarPath = 'https://via.placeholder.com/36/4285F4/FFFFFF?text=' . strtoup
         </main>
     </div>
 
-    <button class="floating-action-button" onclick="triggerFileUpload()">
-        <i class="fas fa-plus"></i>
-    </button>
-
     <input type="file" id="fileInput" multiple style="display: none;" onchange="handleFileSelect(event)">
 
     <script src="../assets/js/home.js"></script>
